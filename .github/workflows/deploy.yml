@@ -25,6 +25,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          # Required for https://<user>.github.io/<repo>/ so asset URLs resolve.
+          # Remove this env block (or set to /) once the site is only served at a custom domain root.
+          VITE_PAGES_BASE: /${{ github.event.repository.name }}/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
