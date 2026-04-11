@@ -44,7 +44,7 @@ export const useMojiganaApp = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [showingAnswer, setShowingAnswer] = useState(false);
-  const [theme, setTheme] = useState(() => persisted?.theme ?? 'light');
+  const [theme, setTheme] = useState(() => persisted?.theme ?? 'dark');
   const [sessionDuration, setSessionDuration] = useState(
     () => persisted?.sessionDuration ?? 0,
   );

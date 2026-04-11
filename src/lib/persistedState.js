@@ -42,7 +42,7 @@ export function loadPersistedState() {
     if (!data || data.v !== VERSION) return null;
 
     const theme =
-      data.theme === 'dark' || data.theme === 'light' ? data.theme : 'light';
+      data.theme === 'dark' || data.theme === 'light' ? data.theme : 'dark';
 
     const scriptMode =
       data.scriptMode === 'hiragana' ||

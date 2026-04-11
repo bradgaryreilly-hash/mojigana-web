@@ -7,7 +7,6 @@ import {
   Settings,
   Sun,
   Moon,
-  Flag,
   Pause,
 } from 'lucide-react';
 
@@ -54,84 +53,110 @@ const QuizView = ({
         <button
           type="button"
           onClick={() => setCurrentView('selection')}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 active:scale-95 transition-all"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-400 transition-all active:scale-95"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={24} strokeWidth={2.25} />
         </button>
         <div
-          className={`absolute left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest px-5 py-1.5 rounded-full border transition-all text-[#06948E] flex gap-1.5 items-center ${
+          className={`absolute left-1/2 -translate-x-1/2 text-[11px] font-black uppercase tracking-widest px-5 py-1.5 sm:text-xs rounded-full border-2 transition-all text-[#06948E] flex gap-1.5 items-center ${
             isDark
-              ? 'bg-emerald-950/40 border-[#06948E]/40'
-              : 'bg-emerald-50/60 border-[#06948E]/20'
+              ? 'border-[#06948E]/50 bg-slate-800/90'
+              : 'border-[#06948E]/35 bg-white shadow-md'
           }`}
         >
-          {isSmartTraining && <Brain size={12} />} MojiGana
+          {isSmartTraining && (
+            <Brain size={13} strokeWidth={2.25} className="shrink-0 text-[#06948E]" />
+          )}{' '}
+          MojiGana
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
             onClick={toggleTheme}
-            className={`w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-all ${
+            className={`flex h-11 w-11 items-center justify-center rounded-full transition-all active:scale-95 ${
               isDark ? 'text-amber-500' : 'text-black'
             }`}
           >
-            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            {isDark ? <Sun size={22} strokeWidth={2.25} /> : <Moon size={22} strokeWidth={2.25} />}
           </button>
           <button
             type="button"
             onClick={() => setIsSettingsOpen(true)}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 active:scale-95 transition-all"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-slate-400 transition-all active:scale-95"
           >
-            <Settings size={20} />
+            <Settings size={22} strokeWidth={2.25} />
           </button>
         </div>
       </header>
       <div className="flex-1 flex flex-col items-center justify-start p-4 pt-2 gap-4 px-4">
-        <div className="grid grid-cols-[1fr_2fr_1fr] items-center justify-center w-full max-w-xl gap-4">
-          <div
-            className={`flex flex-col items-center gap-1 transition-opacity ${
-              showPrev ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
+        <div className="grid grid-cols-[1fr_2fr_1fr] items-stretch justify-center w-full max-w-xl gap-4 min-h-0">
+          <div className="flex flex-col h-full min-h-0 w-full min-w-0">
             <div
-              className={`w-full aspect-[3/4] max-h-[100px] flex items-center justify-center border-2 rounded-xl relative ${
-                isDark
-                  ? 'border-slate-800 bg-slate-800/40'
-                  : 'border-slate-200 bg-slate-50'
+              className={`shrink-0 w-full transition-opacity ${
+                showPrev ? 'opacity-100' : 'opacity-0'
               }`}
             >
-              {prevQuizItem && (
-                <>
-                  <span
-                    style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
-                    className={`${
-                      prevQuizItem.char.length > 1 ? 'text-3xl' : 'text-5xl'
-                    } font-bold ${
-                      isDark ? 'text-white/30' : 'text-slate-900/30'
-                    }`}
-                  >
-                    {prevQuizItem.char}
-                  </span>
-                  <div className="absolute bottom-2 left-0 right-0 text-center">
+              <div
+                className={`w-full aspect-[3/4] max-h-[132px] flex items-center justify-center border-2 rounded-2xl relative ${
+                  isDark
+                    ? 'border-slate-800 bg-slate-800/40'
+                    : 'border-slate-200 bg-slate-50'
+                }`}
+              >
+                {prevQuizItem && (
+                  <>
                     <span
-                      className={`text-[10px] font-black uppercase tracking-widest ${
+                      style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
+                      className={`${
+                        prevQuizItem.char.length > 1 ? 'text-4xl' : 'text-6xl'
+                      } font-bold ${
                         isDark ? 'text-white/30' : 'text-slate-900/30'
                       }`}
                     >
-                      {prevQuizItem.romaji}
+                      {prevQuizItem.char}
                     </span>
-                  </div>
-                </>
-              )}
+                    <div className="absolute bottom-1.5 left-0 right-0 px-0.5 text-center">
+                      <span
+                        className={`line-clamp-2 text-xs font-black uppercase leading-tight tracking-wide sm:text-sm ${
+                          isDark ? 'text-white/30' : 'text-slate-900/30'
+                        }`}
+                      >
+                        {prevQuizItem.romaji}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="flex-1 min-h-0 w-full flex items-center justify-center px-0.5 py-1.5">
+              <button
+                type="button"
+                onClick={() => setShowingAnswer(!showingAnswer)}
+                disabled={isPaused}
+                aria-pressed={showingAnswer}
+                aria-label={showingAnswer ? 'Hide answer on card' : 'Show answer on card'}
+                className={`flex flex-col items-center justify-center gap-1.5 box-border
+                  w-[min(100%,5.25rem)] h-[min(100%,6rem)] min-h-[3rem] max-h-[70%]
+                  rounded-xl border-2 text-[10px] font-black uppercase tracking-wide transition-all active:scale-[0.97] ${
+                  isPaused
+                    ? 'opacity-30 pointer-events-none border-slate-600/50'
+                    : showingAnswer
+                      ? isDark
+                        ? 'border-[#06948E]/55 bg-[#06948E]/12 text-white'
+                        : 'border-[#06948E]/40 bg-[#06948E]/10 text-[#06948E]'
+                      : isDark
+                        ? 'border-[#06948E]/50 bg-slate-800/90 text-[#06948E]'
+                        : 'border-[#06948E]/35 bg-white text-[#06948E] shadow-md'
+                }`}
+              >
+                {showingAnswer ? <EyeOff size={20} strokeWidth={2.25} /> : <Eye size={20} strokeWidth={2.25} />}
+                <span>Show</span>
+              </button>
             </div>
           </div>
-          <div className="flex flex-col items-center gap-1.5 relative">
-            <div
-              className={`flex items-center w-full px-2 gap-2 mb-1 ${
-                sessionDuration === 0 ? 'justify-center' : 'justify-between'
-              }`}
-            >
-              {sessionDuration > 0 && (
+          <div className="flex flex-col items-center gap-1.5 relative w-full min-w-0 min-h-0">
+            {sessionDuration > 0 && (
+              <div className="flex items-center justify-center w-full px-2 gap-3 mb-1">
                 <button
                   type="button"
                   onClick={() => setIsPaused(!isPaused)}
@@ -147,8 +172,6 @@ const QuizView = ({
                     <Pause size={14} fill="currentColor" />
                   )}
                 </button>
-              )}
-              {sessionDuration > 0 && (
                 <span
                   className={`text-lg font-bold tracking-tighter text-[#06948E] ${
                     isPaused ? 'animate-pulse opacity-40' : ''
@@ -156,22 +179,8 @@ const QuizView = ({
                 >
                   {timerText}
                 </span>
-              )}
-              <button
-                type="button"
-                onClick={() => setCurrentView('results')}
-                className={`px-3 py-1.5 rounded-full border transition-all active:scale-95 flex items-center gap-1.5 text-[#06948E] ${
-                  isDark
-                    ? 'bg-slate-800 border-slate-700'
-                    : 'bg-emerald-50/50 border-[#06948E]/20'
-                }`}
-              >
-                <Flag size={12} />
-                <span className="text-[9px] font-black uppercase tracking-wider">
-                  End Session
-                </span>
-              </button>
-            </div>
+              </div>
+            )}
             <div
               style={{ fontSize: 'clamp(1rem, 8vw, 1.5rem)' }}
               role="button"
@@ -182,7 +191,7 @@ const QuizView = ({
                   if (!isPaused) setShowingAnswer(!showingAnswer);
                 }
               }}
-              className={`w-full aspect-square max-h-[220px] flex flex-col items-center justify-center border-2 rounded-[3.5rem] shadow-xl relative transition-all ${
+              className={`w-full aspect-square max-h-[220px] flex flex-col items-center justify-center border-2 rounded-3xl shadow-xl relative transition-all ${
                 isPaused
                   ? isDark
                     ? 'bg-[#06948E]/10 border-[#06948E]/40'
@@ -202,65 +211,93 @@ const QuizView = ({
                   className="text-[#06948E] animate-pulse"
                 />
               ) : (
-                <>
-                  <span
-                    style={{
-                      fontFamily: "'Sawarabi Gothic', sans-serif",
-                      filter: isCorrect
-                        ? 'drop-shadow(0 0 15px #22c55e)'
-                        : isWrong
-                          ? 'drop-shadow(0 0 15px #ef4444)'
-                          : 'none',
-                    }}
-                    className={`leading-none select-none font-bold ${
-                      isDark ? 'text-slate-100' : 'text-slate-950'
-                    } ${
-                      currentQuizItem?.char.length > 1 ? 'text-[4em]' : 'text-[5.5em]'
-                    }`}
-                  >
-                    {currentQuizItem?.char}
-                  </span>
-                  {showingAnswer && (
-                    <div className="absolute bottom-[10%] text-[0.8em] font-black uppercase text-slate-950">
-                      {currentQuizItem?.romaji}
+                <div className="relative flex min-h-0 w-full flex-1 flex-col px-2 py-2">
+                  <div className="flex min-h-0 flex-1 items-center justify-center">
+                    <span
+                      style={{
+                        fontFamily: "'Sawarabi Gothic', sans-serif",
+                        filter: isCorrect
+                          ? 'drop-shadow(0 0 15px #22c55e)'
+                          : isWrong
+                            ? 'drop-shadow(0 0 15px #ef4444)'
+                            : 'none',
+                      }}
+                      className={`max-w-full text-center leading-none select-none font-bold ${
+                        isDark ? 'text-slate-100' : 'text-slate-950'
+                      } ${
+                        currentQuizItem?.char.length > 1 ? 'text-[4em]' : 'text-[5em]'
+                      }`}
+                    >
+                      {currentQuizItem?.char}
+                    </span>
+                  </div>
+                  {showingAnswer ? (
+                    <div
+                      className="pointer-events-none absolute inset-x-0 bottom-0 top-[42%] z-10 flex items-end justify-center px-3 pb-3"
+                      aria-live="polite"
+                    >
+                      <span
+                        className={`line-clamp-3 text-center text-base font-black uppercase leading-tight tracking-wide sm:text-lg ${
+                          isDark ? 'text-slate-100' : 'text-slate-800'
+                        }`}
+                      >
+                        {currentQuizItem?.romaji}
+                      </span>
                     </div>
-                  )}
-                </>
+                  ) : null}
+                </div>
               )}
             </div>
           </div>
-          <div
-            className={`flex flex-col items-center gap-1 transition-opacity ${
-              showNext ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
+          <div className="flex flex-col h-full min-h-0 w-full min-w-0">
             <div
-              className={`w-full aspect-[3/4] max-h-[100px] flex items-center justify-center border-2 rounded-xl relative shadow-sm overflow-hidden ${
-                isDark
-                  ? 'border-slate-800 bg-slate-800/40'
-                  : 'border-slate-200 bg-slate-50'
+              className={`shrink-0 w-full transition-opacity ${
+                showNext ? 'opacity-100' : 'opacity-0'
               }`}
             >
-              {nextQuizItem && (
-                <span
-                  style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
-                  className={`${
-                    nextQuizItem.char.length > 1 ? 'text-3xl' : 'text-5xl'
-                  } font-bold ${isDark ? 'text-white/30' : 'text-slate-900/30'}`}
-                >
-                  {nextQuizItem.char}
-                </span>
-              )}
+              <div
+                className={`w-full aspect-[3/4] max-h-[132px] flex items-center justify-center border-2 rounded-2xl relative shadow-sm overflow-hidden ${
+                  isDark
+                    ? 'border-slate-800 bg-slate-800/40'
+                    : 'border-slate-200 bg-slate-50'
+                }`}
+              >
+                {nextQuizItem && (
+                  <span
+                    style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
+                    className={`${
+                      nextQuizItem.char.length > 1 ? 'text-4xl' : 'text-6xl'
+                    } font-bold ${isDark ? 'text-white/30' : 'text-slate-900/30'}`}
+                  >
+                    {nextQuizItem.char}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex-1 min-h-0 w-full flex items-center justify-center px-0.5 py-1.5">
+              <button
+                type="button"
+                onClick={() => setCurrentView('results')}
+                className={`flex flex-col items-center justify-center box-border
+                  w-[min(100%,5.25rem)] h-[min(100%,6rem)] min-h-[3rem] max-h-[70%]
+                  rounded-xl border-2 text-xs font-black uppercase tracking-wide transition-all active:scale-[0.97] text-[#06948E] ${
+                  isDark
+                    ? 'border-[#06948E]/50 bg-slate-800/90'
+                    : 'border-[#06948E]/35 bg-white shadow-md'
+                }`}
+              >
+                End
+              </button>
             </div>
           </div>
         </div>
-        <div className="w-full max-w-xs flex flex-col gap-4">
+        <div className="w-full max-w-md mx-auto flex flex-col gap-3 sm:gap-4">
           {isMultipleChoice ? (
             <div className="grid grid-cols-3 gap-2">
               {quizOptions.map((opt) => (
                 <div
                   key={opt}
-                  className={`p-[2.5px] rounded-[24px] shadow-lg transition-all duration-300 ${
+                  className={`p-[2.5px] rounded-[20px] sm:rounded-[24px] shadow-lg transition-all duration-300 ${
                     isPaused
                       ? 'bg-slate-500'
                       : isDark
@@ -274,7 +311,7 @@ const QuizView = ({
                     onClick={() =>
                       handleInputChange({ target: { value: opt } })
                     }
-                    className={`w-full py-4 rounded-[21px] font-black text-lg transition-all active:scale-95 ${
+                    className={`w-full py-3 sm:py-4 rounded-[17px] sm:rounded-[21px] font-black text-base sm:text-lg transition-all active:scale-95 ${
                       isPaused
                         ? 'bg-slate-900 text-slate-500'
                         : isDark
@@ -289,7 +326,7 @@ const QuizView = ({
             </div>
           ) : (
             <div
-              className={`p-1 rounded-[26px] transition-all duration-300 ${
+              className={`p-[3px] sm:p-1 rounded-[22px] sm:rounded-[26px] transition-all duration-300 w-full ${
                 isFocused
                   ? isDark
                     ? 'bg-cyan-500/20'
@@ -298,7 +335,7 @@ const QuizView = ({
               }`}
             >
               <div
-                className={`p-[2.5px] rounded-[24px] shadow-lg transition-all duration-300 ${
+                className={`p-[2px] sm:p-[2.5px] rounded-[18px] sm:rounded-[24px] shadow-lg transition-all duration-300 ${
                   isPaused
                     ? 'bg-slate-500'
                     : isWrong
@@ -321,7 +358,7 @@ const QuizView = ({
                   onBlur={() => setIsFocused(false)}
                   placeholder={isPaused ? 'Paused' : 'Answer...'}
                   autoComplete="off"
-                  className={`w-full rounded-[21px] py-4 text-center text-3xl font-black focus:outline-none transition-all ${
+                  className={`w-full rounded-[16px] sm:rounded-[21px] py-2.5 sm:py-4 text-center text-xl sm:text-3xl font-black focus:outline-none transition-all ${
                     isPaused
                       ? 'bg-slate-900 text-slate-500 placeholder-slate-500'
                       : isWrong
@@ -336,17 +373,6 @@ const QuizView = ({
               </div>
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => setShowingAnswer(!showingAnswer)}
-            disabled={isPaused}
-            className={`flex items-center justify-center gap-2 py-2 text-[#06948E] text-xs font-bold uppercase ${
-              isPaused ? 'opacity-30' : ''
-            }`}
-          >
-            {showingAnswer ? <EyeOff size={16} /> : <Eye size={16} />} Show
-            Answer
-          </button>
         </div>
       </div>
     </div>

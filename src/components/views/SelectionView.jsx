@@ -207,33 +207,33 @@ const SelectionView = ({
         <button
           type="button"
           onClick={() => setCurrentView('home')}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 active:scale-95 transition-all z-10"
+          className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-400 transition-all active:scale-95"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={24} strokeWidth={2.25} />
         </button>
         <h2
           className={`text-lg font-bold tracking-tight absolute left-1/2 -translate-x-1/2 ${
             isDark ? 'text-slate-100' : 'text-slate-800'
           }`}
         >
-          Selection
+          Character Selection
         </h2>
-        <div className="flex gap-1 z-10">
+        <div className="z-10 flex shrink-0 items-center gap-1">
           <button
             type="button"
             onClick={toggleTheme}
-            className={`w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-all ${
+            className={`flex h-11 w-11 items-center justify-center rounded-full transition-all active:scale-95 ${
               isDark ? 'text-amber-500' : 'text-black'
             }`}
           >
-            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            {isDark ? <Sun size={22} strokeWidth={2.25} /> : <Moon size={22} strokeWidth={2.25} />}
           </button>
           <button
             type="button"
             onClick={() => setIsSettingsOpen(true)}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 active:scale-95 transition-all"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-slate-400 transition-all active:scale-95"
           >
-            <Settings size={20} />
+            <Settings size={22} strokeWidth={2.25} />
           </button>
         </div>
       </header>
