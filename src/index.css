@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* 1. Force the page to allow full width */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  min-height: 100dvh !important;
+  background-color: #0f172a !important; /* Slate-900 */
+  display: block !important;
+}
+
+/* Reduce tap delay on touch devices; keep default focus rings for a11y */
+button, a, input, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* 2. Remove the "Narrow Column" constraint from the root wrapper */
+#root {
+  width: 100% !important;
+  max-width: none !important; /* Kills Vite's default 1280px cap */
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+}
