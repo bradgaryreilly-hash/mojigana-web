@@ -70,7 +70,9 @@
             'The app JavaScript bundle did not start. Try: disable content blockers for github.io, turn off iCloud Private Relay for Wi‑Fi (if on), use a solid connection, or open this page in a private tab. The address must include the repo path, e.g. …/mojigana-web/',
             false,
           );
-          var mod = document.querySelector('script[type="module"][src]');
+          var mod =
+            document.querySelector('script[defer][src*="/assets/"]') ||
+            document.querySelector('script[type="module"][src]');
           var src = mod && mod.getAttribute('src');
           if (src) {
             var abs = new URL(src, location.href).href;

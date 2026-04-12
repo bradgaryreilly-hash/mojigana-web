@@ -2,8 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 /**
- * GitHub Pages + WebKit: strip crossorigin on same-origin tags; move the module
- * entry from <head> to the end of <body> (some Safari builds fail modules in head).
+ * GitHub Pages + WebKit: strip crossorigin; move script to end of body; use a
+ * classic (non-module) script tag when the bundle is IIFE (no type="module").
  */
 function productionGhPagesHtml() {
   return {
@@ -11,13 +11,13 @@ function productionGhPagesHtml() {
     transformIndexHtml(html) {
       let h = html.replace(/\s+crossorigin(?:="[^"]*"|)/g, '')
       const re =
-        /<script[^>]*type="module"[^>]*src="([^"]+)"[^>]*>\s*<\/script>/
+        /<script([^>]*type="module"[^>]*)src="([^"]+)"([^>]*)>\s*<\/script>/
       const m = h.match(re)
       if (m) {
         const full = m[0]
-        const src = m[1]
+        const src = m[2]
         h = h.replace(full, '')
-        const tag = `<script type="module" src="${src}"></script>`
+        const tag = `<script defer src="${src}"></script>`
         h = h.replace(/\s*<\/body>/i, `\n    ${tag}\n  </body>`)
       }
       return h
@@ -33,5 +33,11 @@ export default defineConfig({
   base: process.env.VITE_PAGES_BASE || '/',
   build: {
     target: ['es2020', 'safari14'],
+    rollupOptions: {
+      output: {
+        format: 'iife',
+        name: 'MojiganaApp',
+      },
+    },
   },
 })
