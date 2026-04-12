@@ -39,10 +39,19 @@
         Loading…
       </p>
     </div>
-    <!-- Runs without ES modules: if the main bundle never executes (blocked/failed), this still fires -->
+    <!-- Runs without ES modules: if the main bundle never executes, this still fires -->
     <script>
       (function () {
         var ms = 12000;
+        function addP(wrap, text, small) {
+          var p = document.createElement('p');
+          p.style.cssText =
+            small
+              ? 'font-size:0.75rem;margin:0.6rem 0 0;opacity:0.88;line-height:1.4'
+              : 'font-size:0.875rem;margin:0;opacity:0.92;line-height:1.45';
+          p.textContent = text;
+          wrap.appendChild(p);
+        }
         setTimeout(function () {
           var boot = document.getElementById('mojigana-boot');
           if (!boot) return;
@@ -55,12 +64,29 @@
           var h = document.createElement('p');
           h.style.cssText = 'font-weight:700;margin:0 0 0.6rem';
           h.textContent = 'MojiGana could not finish loading.';
-          var t = document.createElement('p');
-          t.style.cssText = 'font-size:0.875rem;margin:0;opacity:0.92';
-          t.textContent =
-            'The main script may be blocked or failed. Try: disable content blockers for this GitHub Pages site, turn off iCloud Private Relay for Wi‑Fi (if on), use a strong connection, or open this URL in a private tab. Full address must include the repo name, e.g. …/mojigana-web/';
           wrap.appendChild(h);
-          wrap.appendChild(t);
+          addP(
+            wrap,
+            'The app JavaScript bundle did not start. Try: disable content blockers for github.io, turn off iCloud Private Relay for Wi‑Fi (if on), use a solid connection, or open this page in a private tab. The address must include the repo path, e.g. …/mojigana-web/',
+            false,
+          );
+          var mod = document.querySelector('script[type="module"][src]');
+          var src = mod && mod.getAttribute('src');
+          if (src) {
+            var abs = new URL(src, location.href).href;
+            addP(wrap, 'Script URL: ' + abs, true);
+            fetch(abs, { cache: 'no-store', credentials: 'same-origin' })
+              .then(function (r) {
+                addP(
+                  wrap,
+                  'Network check: HTTP ' + r.status + ' ' + r.statusText + (r.ok ? ' (file reached your phone, but Safari did not run it — try an iOS update or another browser).' : ' (could not load the file — wrong URL or site not deployed yet).'),
+                  true,
+                );
+              })
+              .catch(function (e) {
+                addP(wrap, 'Network check failed: ' + (e && e.message ? e.message : String(e)), true);
+              });
+          }
           root.appendChild(wrap);
         }, ms);
       })();
