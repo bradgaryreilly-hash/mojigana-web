@@ -162,32 +162,6 @@ const QuizView = ({
             </div>
           </div>
           <div className="flex flex-col items-center gap-1.5 relative w-full min-w-0 min-h-0">
-            {sessionDuration > 0 && (
-              <div className="flex items-center justify-center w-full px-2 gap-3 mb-1">
-                <button
-                  type="button"
-                  onClick={() => setIsPaused(!isPaused)}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all border ${
-                    isDark
-                      ? 'bg-slate-800 border-slate-700 text-[#06948E]'
-                      : 'bg-white border-slate-100 text-[#06948E]'
-                  }`}
-                >
-                  {isPaused ? (
-                    <Play size={14} fill="currentColor" />
-                  ) : (
-                    <Pause size={14} fill="currentColor" />
-                  )}
-                </button>
-                <span
-                  className={`text-lg font-bold tracking-tighter text-[#06948E] ${
-                    isPaused ? 'animate-pulse opacity-40' : ''
-                  }`}
-                >
-                  {timerText}
-                </span>
-              </div>
-            )}
             <div
               style={{
                 fontSize: 'clamp(0.9rem, 5.5vmin, 1.5rem)',
@@ -258,6 +232,32 @@ const QuizView = ({
                 </div>
               )}
             </div>
+            {sessionDuration > 0 && (
+              <div className="flex items-center justify-center w-full px-2 gap-3 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setIsPaused(!isPaused)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all border ${
+                    isDark
+                      ? 'bg-slate-800 border-slate-700 text-[#06948E]'
+                      : 'bg-white border-slate-100 text-[#06948E]'
+                  }`}
+                >
+                  {isPaused ? (
+                    <Play size={14} fill="currentColor" />
+                  ) : (
+                    <Pause size={14} fill="currentColor" />
+                  )}
+                </button>
+                <span
+                  className={`text-lg font-bold tracking-tighter text-[#06948E] ${
+                    isPaused ? 'animate-pulse opacity-40' : ''
+                  }`}
+                >
+                  {timerText}
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex flex-col h-full min-h-0 w-full min-w-0">
             <div

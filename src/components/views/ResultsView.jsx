@@ -48,20 +48,18 @@ const pickSessionStrongestWeakest = (rows) => {
   return { strongestSessionItem, weakestSessionItem };
 };
 
-const SortHeaderButton = ({ label, sortKey, align = 'end', sortConfig, onSort }) => (
+const SortHeaderButton = ({ label, sortKey, sortConfig, onSort, colClassName }) => (
   <button
     type="button"
     onClick={() => onSort(sortKey)}
-    className={`flex items-center gap-1 hover:opacity-100 transition-opacity ${
+    className={`flex flex-col items-end gap-0.5 shrink-0 text-right hover:opacity-100 transition-opacity ${
       sortConfig.key === sortKey ? 'opacity-100' : 'opacity-40'
-    } ${align === 'end' ? 'justify-end' : 'justify-start'} text-slate-400`}
+    } text-slate-400 ${colClassName ?? ''}`}
   >
-    <span className="text-[8px] font-black uppercase tracking-widest">
+    <span className="text-[8px] font-black uppercase tracking-widest leading-none">
       {label}
     </span>
-    <span className="flex flex-col -gap-1">
-      <ArrowUpDown size={8} />
-    </span>
+    <ArrowUpDown size={8} className="shrink-0" aria-hidden />
   </button>
 );
 
@@ -156,9 +154,11 @@ const ResultsView = ({
         }`}
       >
         Session means this quiz run only—from Start Quiz until you leave the quiz or
-        this screen. It is not saved when you exit. Details and strongest/weakest use
-        only characters you answered at least once (e.g. unseen cards in a short run
-        are omitted).
+        this screen. It is not saved when you exit. Each card counts once: your first
+        graded answer on that card is its hit or miss; fixing a wrong answer still
+        leaves a miss and does not add a hit. Details and strongest/weakest use only
+        characters you answered at least once (e.g. unseen cards in a short run are
+        omitted).
       </p>
       <div className="flex-1 p-5 space-y-5">
         <div className="flex items-center justify-between gap-6 px-4">
@@ -308,28 +308,33 @@ const ResultsView = ({
         )}
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between px-2">
-            <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-              Details
-            </h4>
-            <div className="flex gap-4 pr-2">
+          <div className="flex items-center gap-4 px-4">
+            <div className="flex min-w-0 max-w-[55%] flex-1">
+              <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                Details
+              </h4>
+            </div>
+            <div className="flex shrink-0 items-center justify-end gap-4 sm:gap-6">
               <SortHeaderButton
                 label="Hits"
                 sortKey="correct"
                 sortConfig={sortConfig}
                 onSort={handleSort}
+                colClassName="w-8"
               />
               <SortHeaderButton
                 label="Miss"
                 sortKey="wrong"
                 sortConfig={sortConfig}
                 onSort={handleSort}
+                colClassName="w-8"
               />
               <SortHeaderButton
                 label="Pts"
                 sortKey="points"
                 sortConfig={sortConfig}
                 onSort={handleSort}
+                colClassName="w-10"
               />
             </div>
           </div>
@@ -378,13 +383,13 @@ const ResultsView = ({
                       </span>
                     </div>
                     <div className="flex shrink-0 items-center justify-end gap-4 text-sm font-black sm:gap-6">
-                      <span className="text-[#06948E] w-8 text-right">
+                      <span className="inline-block w-8 text-right tabular-nums text-[#06948E]">
                         {sessionCount(s.correct)}
                       </span>
-                      <span className="text-rose-500 w-8 text-right">
+                      <span className="inline-block w-8 text-right tabular-nums text-rose-500">
                         {sessionCount(s.wrong)}
                       </span>
-                      <span className="text-blue-500 w-10 text-right">
+                      <span className="inline-block w-10 text-right tabular-nums text-blue-500">
                         {s.sessionPoints > 0
                           ? `+${s.sessionPoints}`
                           : s.sessionPoints}

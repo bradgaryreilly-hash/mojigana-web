@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   ChevronLeft,
   Settings,
@@ -39,6 +40,18 @@ const SelectionView = ({
   toggleCol,
   toggleAllInLayout,
 }) => {
+  const selectionCountByMode = useMemo(() => {
+    let hiragana = 0;
+    let katakana = 0;
+    let numbers = 0;
+    for (const id of selectedIds) {
+      if (id.startsWith('h_')) hiragana += 1;
+      else if (id.startsWith('k_')) katakana += 1;
+      else if (id.startsWith('n_')) numbers += 1;
+    }
+    return { hiragana, katakana, numbers };
+  }, [selectedIds]);
+
   const helperBtnClass = `aspect-square w-full flex items-center justify-center rounded-xl font-bold text-xs shadow-sm active:scale-90 transition-all ${
     isDark
       ? 'bg-slate-800 border border-slate-700 text-slate-300'
@@ -250,24 +263,42 @@ const SelectionView = ({
           }`}
         >
           <div
-            className={`flex p-1 rounded-2xl shadow-inner ${
-              isDark ? 'bg-slate-900/60' : 'bg-slate-200/60'
+            className={`flex gap-1 rounded-3xl p-1 ${
+              isDark ? 'bg-slate-900/60' : 'bg-slate-200/40'
             }`}
           >
-            {['hiragana', 'katakana', 'numbers'].map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setScriptMode(m)}
-                className={`flex-1 py-3 text-xs font-bold uppercase rounded-xl transition-all ${
-                  scriptMode === m
-                    ? 'bg-[#06948E] text-white shadow-md'
-                    : 'text-slate-500'
-                }`}
-              >
-                {m}
-              </button>
-            ))}
+            {['hiragana', 'katakana', 'numbers'].map((m) => {
+              const count = selectionCountByMode[m];
+              const active = scriptMode === m;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setScriptMode(m)}
+                  className={`relative flex min-h-8 flex-1 items-center justify-center rounded-xl py-2 text-xs font-bold uppercase transition-all ${
+                    active
+                      ? isDark
+                        ? 'bg-slate-700 text-white shadow-md'
+                        : 'bg-white text-slate-800 shadow-md'
+                      : isDark
+                        ? 'text-slate-400 hover:text-slate-200'
+                        : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  {count > 0 && (
+                    <span
+                      className="pointer-events-none absolute left-2 top-1/2 z-10 flex h-[1.25rem] min-w-[1.25rem] -translate-y-1/2 items-center justify-center rounded-full bg-[#06948E] px-1.5 text-[10px] font-black leading-none text-white shadow-sm ring-1 ring-black/10 tabular-nums dark:ring-white/20"
+                      aria-hidden
+                    >
+                      {count}
+                    </span>
+                  )}
+                  <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-center">
+                    {m}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           <div
@@ -359,7 +390,7 @@ const SelectionView = ({
               <button
                 type="button"
                 onClick={() => setSessionDuration(0)}
-                className={`py-2 rounded-xl text-xs font-bold uppercase flex-1 transition-all ${
+                className={`flex min-h-8 flex-1 items-center justify-center rounded-xl py-2 text-xs font-bold uppercase transition-all ${
                   sessionDuration === 0
                     ? 'bg-[#06948E] text-white shadow-md'
                     : 'text-slate-500'
@@ -372,7 +403,7 @@ const SelectionView = ({
                 onClick={() => {
                   if (sessionDuration === 0) setSessionDuration(1);
                 }}
-                className={`py-2 rounded-xl text-xs font-bold uppercase flex-1 transition-all ${
+                className={`flex min-h-8 flex-1 items-center justify-center rounded-xl py-2 text-xs font-bold uppercase transition-all ${
                   sessionDuration > 0
                     ? 'bg-[#06948E] text-white shadow-md'
                     : 'text-slate-500'

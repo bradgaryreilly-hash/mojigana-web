@@ -97,6 +97,10 @@ export const useMojiganaApp = () => {
   const inputRef = useRef(null);
   /** Blocks duplicate submitTypedAnswer in one sync turn (keydown + input + keyup). */
   const syncSubmitGuardRef = useRef(false);
+  /** Clears input after wrong flash; cancelled if user answers correctly during the flash. */
+  const wrongFlashTimerRef = useRef(null);
+  /** Session Hits/Miss (and session Pts) use only the first graded answer per card; reset on shiftQueue. */
+  const sessionOutcomeCommittedRef = useRef(false);
   const timerRef = useRef(null);
   const persistSnapshotRef = useRef(null);
   const currentViewRef = useRef(currentView);
@@ -109,7 +113,16 @@ export const useMojiganaApp = () => {
     currentViewRef.current = currentView;
   }, [currentView]);
 
+  const clearWrongFlashTimer = useCallback(() => {
+    if (wrongFlashTimerRef.current != null) {
+      clearTimeout(wrongFlashTimerRef.current);
+      wrongFlashTimerRef.current = null;
+    }
+  }, []);
+
   const clearQuizEphemeralState = useCallback(() => {
+    clearWrongFlashTimer();
+    sessionOutcomeCommittedRef.current = false;
     setSessionStats({
       correct: 0,
       wrong: 0,
@@ -126,7 +139,7 @@ export const useMojiganaApp = () => {
     setShowingAnswer(false);
     setIsPaused(false);
     setTimeLeft(0);
-  }, []);
+  }, [clearWrongFlashTimer]);
 
   /** Leaving quiz or results drops in-memory session data; nothing is restored next visit. */
   useEffect(() => {
@@ -375,6 +388,8 @@ export const useMojiganaApp = () => {
 
   const startQuiz = () => {
     if (selectedIds.length === 0) return;
+    clearWrongFlashTimer();
+    sessionOutcomeCommittedRef.current = false;
     const pool = getPool();
     /**
      * Session = one run from Start Quiz until you leave quiz or results.
@@ -404,6 +419,8 @@ export const useMojiganaApp = () => {
   };
 
   const shiftQueue = () => {
+    clearWrongFlashTimer();
+    sessionOutcomeCommittedRef.current = false;
     setQuizQueue((prevQueue) => {
       const newQ = [...prevQueue];
       const finishedItem = newQ.shift();
@@ -423,38 +440,50 @@ export const useMojiganaApp = () => {
 
   /** Full-string check: multiple-choice picks, manual typing (Enter / Space), and wrong answers that are not valid prefixes. */
   const submitTypedAnswer = (raw) => {
-    if (isCorrect || isWrong || isPaused || !currentQuizItem) return;
+    if (isCorrect || isPaused || !currentQuizItem) return;
     const val = raw.toLowerCase().trim();
     if (val.length === 0) return;
+
+    const allPossible = [
+      currentQuizItem.romaji,
+      ...(currentQuizItem.aliases || []),
+    ];
+
+    if (isWrong) {
+      if (!allPossible.includes(val)) return;
+      /* Correct recovery: advance card; session hit was already decided on first answer. */
+    }
+
     if (syncSubmitGuardRef.current) return;
     syncSubmitGuardRef.current = true;
     queueMicrotask(() => {
       syncSubmitGuardRef.current = false;
     });
 
-    const allPossible = [
-      currentQuizItem.romaji,
-      ...(currentQuizItem.aliases || []),
-    ];
     const charId = currentQuizItem.id;
     const isEligibleForMastery = selectedIds.length >= 5;
 
     if (allPossible.includes(val)) {
-      setSessionStats((prev) => {
-        const charData = { ...prev.charData };
-        if (!charData[charId]) {
-          charData[charId] = { correct: 0, wrong: 0, sessionPoints: 0 };
-        }
-        charData[charId].correct += 1;
-        if (isEligibleForMastery) charData[charId].sessionPoints += 1;
-        return {
-          ...prev,
-          correct: prev.correct + 1,
-          pointsChange:
-            prev.pointsChange + (isEligibleForMastery ? 1 : 0),
-          charData,
-        };
-      });
+      clearWrongFlashTimer();
+      setIsWrong(false);
+      if (!sessionOutcomeCommittedRef.current) {
+        sessionOutcomeCommittedRef.current = true;
+        setSessionStats((prev) => {
+          const charData = { ...prev.charData };
+          if (!charData[charId]) {
+            charData[charId] = { correct: 0, wrong: 0, sessionPoints: 0 };
+          }
+          charData[charId].correct += 1;
+          if (isEligibleForMastery) charData[charId].sessionPoints += 1;
+          return {
+            ...prev,
+            correct: prev.correct + 1,
+            pointsChange:
+              prev.pointsChange + (isEligibleForMastery ? 1 : 0),
+            charData,
+          };
+        });
+      }
       if (isEligibleForMastery) {
         setWeights((prev) => ({
           ...prev,
@@ -470,35 +499,39 @@ export const useMojiganaApp = () => {
         shiftQueue();
       }, 150);
     } else {
+      if (isWrong) return;
       const oldScore = mastery[charId] || 0;
       const rank = getMedalDisplayInfo(oldScore, isDark);
       const actualPenalty = Math.min(rank.penalty, oldScore);
-      setSessionStats((prev) => {
-        const charData = { ...prev.charData };
-        if (!charData[charId]) {
-          charData[charId] = { correct: 0, wrong: 0, sessionPoints: 0 };
-        }
-        charData[charId].wrong += 1;
+      if (!sessionOutcomeCommittedRef.current) {
+        sessionOutcomeCommittedRef.current = true;
+        setSessionStats((prev) => {
+          const charData = { ...prev.charData };
+          if (!charData[charId]) {
+            charData[charId] = { correct: 0, wrong: 0, sessionPoints: 0 };
+          }
+          charData[charId].wrong += 1;
+          if (isEligibleForMastery) {
+            charData[charId].sessionPoints -= actualPenalty;
+          }
+          return {
+            ...prev,
+            wrong: prev.wrong + 1,
+            pointsChange:
+              prev.pointsChange - (isEligibleForMastery ? actualPenalty : 0),
+            charData,
+          };
+        });
         if (isEligibleForMastery) {
-          charData[charId].sessionPoints -= actualPenalty;
+          setWeights((prev) => ({
+            ...prev,
+            [charId]: Math.min(4, (prev[charId] || 1) + 1),
+          }));
+          setMastery((prev) => ({
+            ...prev,
+            [charId]: Math.max(0, oldScore - actualPenalty),
+          }));
         }
-        return {
-          ...prev,
-          wrong: prev.wrong + 1,
-          pointsChange:
-            prev.pointsChange - (isEligibleForMastery ? actualPenalty : 0),
-          charData,
-        };
-      });
-      if (isEligibleForMastery) {
-        setWeights((prev) => ({
-          ...prev,
-          [charId]: Math.min(4, (prev[charId] || 1) + 1),
-        }));
-        setMastery((prev) => ({
-          ...prev,
-          [charId]: Math.max(0, oldScore - actualPenalty),
-        }));
       }
       setQuizQueue((prevQueue) => {
         const newQ = [...prevQueue];
@@ -510,7 +543,9 @@ export const useMojiganaApp = () => {
         return sanitizeQueue(newQ);
       });
       setIsWrong(true);
-      setTimeout(() => {
+      clearWrongFlashTimer();
+      wrongFlashTimerRef.current = setTimeout(() => {
+        wrongFlashTimerRef.current = null;
         setInputValue('');
         setIsWrong(false);
       }, 350);
@@ -518,7 +553,7 @@ export const useMojiganaApp = () => {
   };
 
   const handleInputChange = (e) => {
-    if (isCorrect || isWrong || isPaused) return;
+    if (isCorrect || isPaused) return;
     const raw = e.target.value;
 
     if (isMultipleChoice) {
@@ -563,7 +598,6 @@ export const useMojiganaApp = () => {
       !manualAnswerConfirm ||
       isMultipleChoice ||
       isCorrect ||
-      isWrong ||
       isPaused
     ) {
       return;
@@ -585,7 +619,6 @@ export const useMojiganaApp = () => {
       !manualAnswerConfirm ||
       isMultipleChoice ||
       isCorrect ||
-      isWrong ||
       isPaused
     ) {
       return;
@@ -611,7 +644,6 @@ export const useMojiganaApp = () => {
       !manualAnswerConfirm ||
       isMultipleChoice ||
       isCorrect ||
-      isWrong ||
       isPaused
     ) {
       return;
