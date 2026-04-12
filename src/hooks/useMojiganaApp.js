@@ -155,7 +155,11 @@ export const useMojiganaApp = () => {
     prevViewRef.current = currentView;
   }, [currentView, clearQuizEphemeralState]);
 
-  /** Mobile browsers scroll the document to keep the answer field in view, which clips the quiz header. Pin the page to the top while on the quiz screen. */
+  /**
+   * Lock document scroll on the quiz screen so the layout viewport does not move under
+   * the shell. Quiz content scrolls inside QuizView instead (avoids iOS Safari fighting
+   * visualViewport scroll handlers and leaving the header off-screen).
+   */
   useEffect(() => {
     if (currentView !== 'quiz') return;
 
@@ -173,14 +177,6 @@ export const useMojiganaApp = () => {
 
     pinDocumentTop();
 
-    const vv = window.visualViewport;
-    const onVisualViewport = () => pinDocumentTop();
-    if (vv) {
-      vv.addEventListener('resize', onVisualViewport);
-      vv.addEventListener('scroll', onVisualViewport);
-    }
-    window.addEventListener('scroll', pinDocumentTop, { passive: true });
-
     const onFocusIn = (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         requestAnimationFrame(pinDocumentTop);
@@ -192,11 +188,6 @@ export const useMojiganaApp = () => {
     return () => {
       html.style.overflow = prevHtmlOverflow;
       document.body.style.overflow = prevBodyOverflow;
-      if (vv) {
-        vv.removeEventListener('resize', onVisualViewport);
-        vv.removeEventListener('scroll', onVisualViewport);
-      }
-      window.removeEventListener('scroll', pinDocumentTop);
       document.removeEventListener('focusin', onFocusIn);
     };
   }, [currentView]);

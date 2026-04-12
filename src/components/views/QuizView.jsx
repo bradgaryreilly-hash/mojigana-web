@@ -45,13 +45,13 @@ const QuizView = ({
 
   return (
     <div
-      className={`absolute inset-0 overflow-hidden flex flex-col touch-none z-30 transition-colors ${
+      className={`relative z-30 flex min-h-0 w-full flex-1 flex-col overflow-hidden transition-colors ${
         isDark ? 'bg-slate-900' : 'bg-slate-50'
       }`}
     >
       <header
-        className={`px-4 h-14 border-b flex items-center justify-between shrink-0 relative z-20 ${
-          isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'
+        className={`flex h-14 shrink-0 items-center justify-between border-b px-4 ${
+          isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-100 bg-white'
         }`}
       >
         <button
@@ -92,7 +92,7 @@ const QuizView = ({
           </button>
         </div>
       </header>
-      <div className="flex-1 flex flex-col items-center justify-start p-4 pt-2 gap-4 px-4">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-start gap-4 overflow-y-auto overflow-x-hidden overscroll-y-contain px-4 pb-4 pt-2 [-webkit-overflow-scrolling:touch]">
         <div className="grid grid-cols-[1fr_2fr_1fr] items-stretch justify-center w-full max-w-xl gap-4 min-h-0">
           <div className="flex flex-col h-full min-h-0 w-full min-w-0">
             <div
