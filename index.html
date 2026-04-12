@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <style>
+      /* Runs before JS; avoids a blank white flash if the bundle fails on some browsers */
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background-color: #0f172a;
+      }
+    </style>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta
@@ -16,7 +25,20 @@
     <title>MojiGana</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <p
+        id="mojigana-boot"
+        style="
+          margin: 0;
+          padding: 1.25rem;
+          font-family: system-ui, sans-serif;
+          font-size: 0.9rem;
+          color: #94a3b8;
+        "
+      >
+        Loading…
+      </p>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
