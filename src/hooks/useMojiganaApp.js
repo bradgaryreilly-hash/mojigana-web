@@ -20,6 +20,31 @@ function isSingleWhitespaceConfirmChar(data) {
   return /\s/u.test(c) && c !== '\n' && c !== '\r';
 }
 
+function isWhitespaceOnlyString(data) {
+  return data != null && data !== '' && /^\s+$/u.test(data);
+}
+
+/** Samsung / Android soft keys often omit `e.key === ' '`. */
+function isSpaceConfirmKeyEvent(e) {
+  return (
+    e.key === ' ' ||
+    e.code === 'Space' ||
+    e.key === 'Spacebar' ||
+    e.keyCode === 32 ||
+    e.which === 32
+  );
+}
+
+function isEnterConfirmKeyEvent(e) {
+  return (
+    e.key === 'Enter' ||
+    e.code === 'Enter' ||
+    e.code === 'NumpadEnter' ||
+    e.keyCode === 13 ||
+    e.which === 13
+  );
+}
+
 export const useMojiganaApp = () => {
   const persisted = useMemo(() => loadPersistedState(), []);
 
@@ -70,6 +95,8 @@ export const useMojiganaApp = () => {
   });
 
   const inputRef = useRef(null);
+  /** Blocks duplicate submitTypedAnswer in one sync turn (keydown + input + keyup). */
+  const syncSubmitGuardRef = useRef(false);
   const timerRef = useRef(null);
   const persistSnapshotRef = useRef(null);
   const currentViewRef = useRef(currentView);
@@ -399,6 +426,11 @@ export const useMojiganaApp = () => {
     if (isCorrect || isWrong || isPaused || !currentQuizItem) return;
     const val = raw.toLowerCase().trim();
     if (val.length === 0) return;
+    if (syncSubmitGuardRef.current) return;
+    syncSubmitGuardRef.current = true;
+    queueMicrotask(() => {
+      syncSubmitGuardRef.current = false;
+    });
 
     const allPossible = [
       currentQuizItem.romaji,
@@ -497,13 +529,12 @@ export const useMojiganaApp = () => {
 
     if (manualAnswerConfirm) {
       const prev = inputValue;
-      if (
-        raw.length === prev.length + 1 &&
-        raw.startsWith(prev) &&
-        isSingleWhitespaceConfirmChar(raw.slice(prev.length))
-      ) {
-        submitTypedAnswer(prev);
-        return;
+      if (raw.startsWith(prev) && raw.length > prev.length) {
+        const suffix = raw.slice(prev.length);
+        if (isWhitespaceOnlyString(suffix)) {
+          submitTypedAnswer(prev);
+          return;
+        }
       }
       setInputValue(raw);
       return;
@@ -537,9 +568,37 @@ export const useMojiganaApp = () => {
     ) {
       return;
     }
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (isSpaceConfirmKeyEvent(e) || isEnterConfirmKeyEvent(e)) {
       e.preventDefault();
-      submitTypedAnswer(e.currentTarget.value);
+      let v = e.currentTarget.value;
+      if (isEnterConfirmKeyEvent(e)) v = v.replace(/\r?\n$/u, '');
+      submitTypedAnswer(v);
+    }
+  };
+
+  /**
+   * Some Samsung / Android builds fire keyup when keydown/beforeinput are missing or mis-labeled.
+   * Runs after the character is in the field, so trim trailing whitespace for Space.
+   */
+  const handleQuizInputKeyUp = (e) => {
+    if (
+      !manualAnswerConfirm ||
+      isMultipleChoice ||
+      isCorrect ||
+      isWrong ||
+      isPaused
+    ) {
+      return;
+    }
+    if (isSpaceConfirmKeyEvent(e)) {
+      const el = e.currentTarget;
+      const raw = el.value;
+      const base = raw.replace(/\s+$/u, '');
+      if (base.length < raw.length) submitTypedAnswer(base);
+      return;
+    }
+    if (isEnterConfirmKeyEvent(e)) {
+      submitTypedAnswer(e.currentTarget.value.replace(/\r?\n$/u, ''));
     }
   };
 
@@ -561,6 +620,15 @@ export const useMojiganaApp = () => {
     if (!ni || typeof ni.inputType !== 'string') return;
 
     if (ni.inputType === 'insertText' && isSingleWhitespaceConfirmChar(ni.data)) {
+      e.preventDefault();
+      submitTypedAnswer(e.currentTarget.value);
+      return;
+    }
+    if (
+      (ni.inputType === 'insertReplacementText' ||
+        ni.inputType === 'insertCompositionText') &&
+      isWhitespaceOnlyString(ni.data)
+    ) {
       e.preventDefault();
       submitTypedAnswer(e.currentTarget.value);
       return;
@@ -627,6 +695,7 @@ export const useMojiganaApp = () => {
     startQuiz,
     handleInputChange,
     handleQuizInputKeyDown,
+    handleQuizInputKeyUp,
     handleQuizInputBeforeInput,
   };
 };

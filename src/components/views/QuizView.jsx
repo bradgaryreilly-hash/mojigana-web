@@ -33,6 +33,7 @@ const QuizView = ({
   quizOptions,
   handleInputChange,
   handleQuizInputKeyDown,
+  handleQuizInputKeyUp,
   handleQuizInputBeforeInput,
   manualAnswerConfirm,
   inputRef,
@@ -368,6 +369,7 @@ const QuizView = ({
                   onChange={handleInputChange}
                   onBeforeInput={handleQuizInputBeforeInput}
                   onKeyDown={handleQuizInputKeyDown}
+                  onKeyUp={handleQuizInputKeyUp}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder={
@@ -378,6 +380,8 @@ const QuizView = ({
                         : 'Answer...'
                   }
                   autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
                   className={`w-full rounded-[16px] sm:rounded-[21px] py-2.5 sm:py-4 text-center text-xl sm:text-3xl font-black focus:outline-none transition-all ${
                     isPaused
                       ? 'bg-slate-900 text-slate-500 placeholder-slate-500'
