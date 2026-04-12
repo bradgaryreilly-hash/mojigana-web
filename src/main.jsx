@@ -1,47 +1,63 @@
-/**
- * Tiny entry: the real app loads via dynamic import so failures (blocked script,
- * bad chunk, import error) surface instead of leaving "Loading…" forever.
- *
- * Global styles load here (static import) so index.html gets a normal stylesheet
- * link — not a second-phase preload tied to the async chunk (more reliable on iOS).
- */
 import './index.css'
+import { StrictMode, Component } from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './App.jsx'
 
-const rootEl = document.getElementById('root')
+class RootErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { error: null }
+  }
 
-function showFatal(message) {
-  if (!rootEl) return
-  rootEl.replaceChildren()
-  const wrap = document.createElement('div')
-  wrap.style.cssText =
-    'padding:24px;font-family:system-ui,sans-serif;background:#0f172a;color:#f8fafc;min-height:100vh;box-sizing:border-box'
-  const title = document.createElement('p')
-  title.style.cssText = 'font-weight:700;margin:0 0 8px'
-  title.textContent = 'Could not load app'
-  const pre = document.createElement('pre')
-  pre.style.cssText = 'white-space:pre-wrap;font-size:12px;margin:0;opacity:.9'
-  pre.textContent = String(message)
-  wrap.append(title, pre)
-  rootEl.append(wrap)
+  static getDerivedStateFromError(error) {
+    return { error }
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div
+          style={{
+            padding: 24,
+            fontFamily: 'system-ui, sans-serif',
+            background: '#0f172a',
+            color: '#f8fafc',
+            minHeight: '100vh',
+            boxSizing: 'border-box',
+          }}
+        >
+          <h1 style={{ fontSize: 18, margin: '0 0 12px' }}>Something went wrong</h1>
+          <pre
+            style={{
+              whiteSpace: 'pre-wrap',
+              fontSize: 12,
+              opacity: 0.9,
+              margin: 0,
+            }}
+          >
+            {String(this.state.error?.message || this.state.error)}
+          </pre>
+        </div>
+      )
+    }
+    return this.props.children
+  }
 }
 
-let settled = false
-const tid = setTimeout(() => {
-  if (!settled && document.getElementById('mojigana-boot')) {
-    showFatal(
-      'Timed out after 20s. Try Wi‑Fi, disable content blockers for this site, or open in a private tab.',
-    )
-  }
-}, 20000)
+const rootEl = document.getElementById('root')
+if (!rootEl) {
+  throw new Error('Missing #root')
+}
 
-import('./app-entry.jsx')
-  .then(() => {
-    settled = true
-    clearTimeout(tid)
-  })
-  .catch((err) => {
-    settled = true
-    clearTimeout(tid)
-    console.error(err)
-    showFatal(err?.message || err)
-  })
+try {
+  const root = createRoot(rootEl)
+  root.render(
+    <StrictMode>
+      <RootErrorBoundary>
+        <App />
+      </RootErrorBoundary>
+    </StrictMode>,
+  )
+} catch (e) {
+  rootEl.innerHTML = `<div style="padding:24px;font-family:system-ui,sans-serif;background:#0f172a;color:#f8fafc;min-height:100vh;box-sizing:border-box"><p style="font-weight:700;margin:0 0 8px">Could not start</p><pre style="white-space:pre-wrap;font-size:12px;margin:0;opacity:.9">${String(e?.message || e)}</pre></div>`
+}

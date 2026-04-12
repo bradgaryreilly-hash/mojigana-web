@@ -39,6 +39,32 @@
         Loading…
       </p>
     </div>
+    <!-- Runs without ES modules: if the main bundle never executes (blocked/failed), this still fires -->
+    <script>
+      (function () {
+        var ms = 12000;
+        setTimeout(function () {
+          var boot = document.getElementById('mojigana-boot');
+          if (!boot) return;
+          var root = document.getElementById('root');
+          if (!root) return;
+          root.replaceChildren();
+          var wrap = document.createElement('div');
+          wrap.style.cssText =
+            'padding:1.25rem;font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;box-sizing:border-box;line-height:1.45';
+          var h = document.createElement('p');
+          h.style.cssText = 'font-weight:700;margin:0 0 0.6rem';
+          h.textContent = 'MojiGana could not finish loading.';
+          var t = document.createElement('p');
+          t.style.cssText = 'font-size:0.875rem;margin:0;opacity:0.92';
+          t.textContent =
+            'The main script may be blocked or failed. Try: disable content blockers for this GitHub Pages site, turn off iCloud Private Relay for Wi‑Fi (if on), use a strong connection, or open this URL in a private tab. Full address must include the repo name, e.g. …/mojigana-web/';
+          wrap.appendChild(h);
+          wrap.appendChild(t);
+          root.appendChild(wrap);
+        }, ms);
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
