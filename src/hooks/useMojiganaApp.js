@@ -11,6 +11,15 @@ import {
   flushPersist,
 } from '../lib/persistedState';
 
+/** Space / NBSP / full-width space etc. — Android keyboards often differ from iOS. */
+function isSingleWhitespaceConfirmChar(data) {
+  if (data == null || data === '') return false;
+  const chars = [...data];
+  if (chars.length !== 1) return false;
+  const c = chars[0];
+  return /\s/u.test(c) && c !== '\n' && c !== '\r';
+}
+
 export const useMojiganaApp = () => {
   const persisted = useMemo(() => loadPersistedState(), []);
 
@@ -487,6 +496,15 @@ export const useMojiganaApp = () => {
     }
 
     if (manualAnswerConfirm) {
+      const prev = inputValue;
+      if (
+        raw.length === prev.length + 1 &&
+        raw.startsWith(prev) &&
+        isSingleWhitespaceConfirmChar(raw.slice(prev.length))
+      ) {
+        submitTypedAnswer(prev);
+        return;
+      }
       setInputValue(raw);
       return;
     }
@@ -540,14 +558,14 @@ export const useMojiganaApp = () => {
       return;
     }
     const ni = e.nativeEvent;
-    if (typeof InputEvent === 'undefined' || !(ni instanceof InputEvent)) return;
+    if (!ni || typeof ni.inputType !== 'string') return;
 
-    if (ni.inputType === 'insertText' && ni.data === ' ') {
+    if (ni.inputType === 'insertText' && isSingleWhitespaceConfirmChar(ni.data)) {
       e.preventDefault();
       submitTypedAnswer(e.currentTarget.value);
       return;
     }
-    if (ni.inputType === 'insertLineBreak') {
+    if (ni.inputType === 'insertLineBreak' || ni.inputType === 'insertParagraph') {
       e.preventDefault();
       submitTypedAnswer(e.currentTarget.value);
     }

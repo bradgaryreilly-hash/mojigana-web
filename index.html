@@ -42,7 +42,7 @@
     <!-- Runs without ES modules: if the main bundle never executes, this still fires -->
     <script>
       (function () {
-        var ms = 12000;
+        var ms = 25000;
         function addP(wrap, text, small) {
           var p = document.createElement('p');
           p.style.cssText =
@@ -70,24 +70,32 @@
             'The app JavaScript bundle did not start. Try: disable content blockers for github.io, turn off iCloud Private Relay for Wi‑Fi (if on), use a solid connection, or open this page in a private tab. The address must include the repo path, e.g. …/mojigana-web/',
             false,
           );
-          var mod =
-            document.querySelector('script[defer][src*="/assets/"]') ||
-            document.querySelector('script[type="module"][src]');
-          var src = mod && mod.getAttribute('src');
-          if (src) {
-            var abs = new URL(src, location.href).href;
-            addP(wrap, 'Script URL: ' + abs, true);
-            fetch(abs, { cache: 'no-store', credentials: 'same-origin' })
-              .then(function (r) {
-                addP(
-                  wrap,
-                  'Network check: HTTP ' + r.status + ' ' + r.statusText + (r.ok ? ' (file reached your phone, but Safari did not run it — try an iOS update or another browser).' : ' (could not load the file — wrong URL or site not deployed yet).'),
-                  true,
-                );
-              })
-              .catch(function (e) {
-                addP(wrap, 'Network check failed: ' + (e && e.message ? e.message : String(e)), true);
-              });
+          if (document.querySelector('meta[name="mojigana-inline-js"]')) {
+            addP(
+              wrap,
+              'The app script is embedded in this page (no separate .js file). If you still see this, Safari may be blocking inline scripts — check Safari → Settings → Advanced, turn off experimental features, or try another browser.',
+              true,
+            );
+          } else {
+            var mod =
+              document.querySelector('script[defer][src*="/assets/"]') ||
+              document.querySelector('script[type="module"][src]');
+            var src = mod && mod.getAttribute('src');
+            if (src) {
+              var abs = new URL(src, location.href).href;
+              addP(wrap, 'Script URL: ' + abs, true);
+              fetch(abs, { cache: 'no-store', credentials: 'same-origin' })
+                .then(function (r) {
+                  addP(
+                    wrap,
+                    'Network check: HTTP ' + r.status + ' ' + r.statusText + (r.ok ? ' (file reached your phone, but Safari did not run it — try an iOS update or another browser).' : ' (could not load the file — wrong URL or site not deployed yet).'),
+                    true,
+                  );
+                })
+                .catch(function (e) {
+                  addP(wrap, 'Network check failed: ' + (e && e.message ? e.message : String(e)), true);
+                });
+            }
           }
           root.appendChild(wrap);
         }, ms);
