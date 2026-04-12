@@ -1,5 +1,53 @@
 import { TrendingUp, TrendingDown, ArrowUpDown } from 'lucide-react';
 
+/** Hit/miss counts must be plain non-negative integers (ignores booleans, strings, floats). */
+const sessionCount = (v) => {
+  if (typeof v !== 'number' || !Number.isInteger(v) || v < 0) return 0;
+  return v;
+};
+
+/** True if this character has at least one submitted answer (hit or miss) this run. */
+const wasAnsweredThisSession = (charData, itemId) => {
+  const s = charData[itemId];
+  if (!s) return false;
+  return sessionCount(s.correct) + sessionCount(s.wrong) > 0;
+};
+
+/**
+ * Strongest / weakest from rows for characters the user actually answered (same as details grid).
+ * Weakest exists only if sum of misses across those rows is > 0.
+ */
+const pickSessionStrongestWeakest = (rows) => {
+  if (rows.length === 0) {
+    return { strongestSessionItem: null, weakestSessionItem: null };
+  }
+
+  const wrongN = rows.reduce((acc, r) => acc + r.wrong, 0);
+  const correctN = rows.reduce((acc, r) => acc + r.correct, 0);
+
+  let weakestSessionItem = null;
+  if (wrongN > 0) {
+    const maxWrong = Math.max(...rows.map((r) => r.wrong));
+    if (maxWrong > 0) {
+      const byWrong = rows.filter((r) => r.wrong === maxWrong);
+      const minCorrect = Math.min(...byWrong.map((r) => r.correct));
+      const tied = byWrong.filter((r) => r.correct === minCorrect);
+      weakestSessionItem = tied[Math.floor(Math.random() * tied.length)].item;
+    }
+  }
+
+  let strongestSessionItem = null;
+  if (correctN > 0) {
+    const maxCorrect = Math.max(...rows.map((r) => r.correct));
+    const byCorrect = rows.filter((r) => r.correct === maxCorrect);
+    const minWrong = Math.min(...byCorrect.map((r) => r.wrong));
+    const tied = byCorrect.filter((r) => r.wrong === minWrong);
+    strongestSessionItem = tied[Math.floor(Math.random() * tied.length)].item;
+  }
+
+  return { strongestSessionItem, weakestSessionItem };
+};
+
 const SortHeaderButton = ({ label, sortKey, align = 'end', sortConfig, onSort }) => (
   <button
     type="button"
@@ -20,19 +68,37 @@ const SortHeaderButton = ({ label, sortKey, align = 'end', sortConfig, onSort })
 const ResultsView = ({
   isDark,
   sessionStats,
-  mastery,
   getPool,
   sortConfig,
   setSortConfig,
   setCurrentView,
 }) => {
-  const total = sessionStats.correct + sessionStats.wrong;
-  const accuracy =
-    total > 0 ? Math.round((sessionStats.correct / total) * 100) : 0;
-  const pool = getPool();
-  const sortedSummaryPool = [...pool].sort(
-    (a, b) => (mastery[b.id] || 0) - (mastery[a.id] || 0),
+  const pool =
+    Array.isArray(sessionStats.poolSnapshot) && sessionStats.poolSnapshot.length > 0
+      ? sessionStats.poolSnapshot
+      : getPool();
+  const answeredPool = pool.filter((item) =>
+    wasAnsweredThisSession(sessionStats.charData, item.id),
   );
+  const sessionRows = answeredPool.map((item) => {
+    const s = sessionStats.charData[item.id] || {};
+    return {
+      item,
+      correct: sessionCount(s.correct),
+      wrong: sessionCount(s.wrong),
+    };
+  });
+  const correctN = sessionRows.reduce((acc, r) => acc + r.correct, 0);
+  const wrongN = sessionRows.reduce((acc, r) => acc + r.wrong, 0);
+  const total = correctN + wrongN;
+  const accuracy = total > 0 ? Math.round((correctN / total) * 100) : 0;
+  const { strongestSessionItem, weakestSessionItem } =
+    pickSessionStrongestWeakest(sessionRows);
+  const showStrongestCard = strongestSessionItem != null;
+  const showFilledWeakest = weakestSessionItem != null && wrongN > 0;
+  const showEmptyWeakest =
+    wrongN === 0 && total > 0 && showStrongestCard;
+  const showNeedsFocusSlot = showFilledWeakest || showEmptyWeakest;
 
   const handleSort = (key) => {
     setSortConfig((prev) => ({
@@ -42,7 +108,7 @@ const ResultsView = ({
     }));
   };
 
-  const sortedList = [...pool].sort((a, b) => {
+  const sortedList = [...answeredPool].sort((a, b) => {
     if (sortConfig.key === 'none') return 0;
     const statsA = sessionStats.charData[a.id] || {
       correct: 0,
@@ -57,11 +123,11 @@ const ResultsView = ({
     let valA;
     let valB;
     if (sortConfig.key === 'correct') {
-      valA = statsA.correct;
-      valB = statsB.correct;
+      valA = sessionCount(statsA.correct);
+      valB = sessionCount(statsB.correct);
     } else if (sortConfig.key === 'wrong') {
-      valA = statsA.wrong;
-      valB = statsB.wrong;
+      valA = sessionCount(statsA.wrong);
+      valB = sessionCount(statsB.wrong);
     } else {
       valA = statsA.sessionPoints;
       valB = statsB.sessionPoints;
@@ -84,6 +150,16 @@ const ResultsView = ({
           Session Stats
         </h2>
       </header>
+      <p
+        className={`px-5 text-center text-[10px] leading-snug ${
+          isDark ? 'text-slate-500' : 'text-slate-400'
+        }`}
+      >
+        Session means this quiz run only—from Start Quiz until you leave the quiz or
+        this screen. It is not saved when you exit. Details and strongest/weakest use
+        only characters you answered at least once (e.g. unseen cards in a short run
+        are omitted).
+      </p>
       <div className="flex-1 p-5 space-y-5">
         <div className="flex items-center justify-between gap-6 px-4">
           <div className="relative w-24 h-24 flex items-center justify-center">
@@ -147,7 +223,7 @@ const ResultsView = ({
                 Hits
               </span>
               <span className="text-lg font-black text-[#06948E]">
-                {sessionStats.correct}
+                {correctN}
               </span>
             </div>
             <div
@@ -161,54 +237,73 @@ const ResultsView = ({
                 Miss
               </span>
               <span className="text-lg font-black text-rose-500">
-                {sessionStats.wrong}
+                {wrongN}
               </span>
             </div>
           </div>
         </div>
 
-        {total > 0 && (
-          <div className="grid grid-cols-2 gap-3">
-            <div
-              className={`p-3 rounded-[2rem] border flex flex-col items-center ${
-                isDark
-                  ? 'bg-emerald-500/5 border-emerald-500/20'
-                  : 'bg-emerald-50 border-emerald-100'
-              }`}
-            >
-              <TrendingUp size={14} className="text-[#06948E] mb-1" />
-              <span
-                className={`text-2xl font-bold ${
-                  isDark ? 'text-white' : 'text-slate-900'
+        {total > 0 && (showStrongestCard || showFilledWeakest) && (
+          <div
+            className={`grid gap-3 ${
+              showStrongestCard && showNeedsFocusSlot
+                ? 'grid-cols-2'
+                : 'grid-cols-1'
+            }`}
+          >
+            {showStrongestCard && (
+              <div
+                className={`p-3 rounded-[2rem] border flex flex-col items-center ${
+                  isDark
+                    ? 'bg-emerald-500/5 border-emerald-500/20'
+                    : 'bg-emerald-50 border-emerald-100'
                 }`}
-                style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
               >
-                {sortedSummaryPool[0]?.char}
-              </span>
-              <span className="text-[8px] font-black uppercase text-[#06948E]">
-                Strongest
-              </span>
-            </div>
-            <div
-              className={`p-3 rounded-[2.5rem] border flex flex-col items-center ${
-                isDark
-                  ? 'bg-rose-500/5 border-rose-500/20'
-                  : 'bg-rose-50 border-rose-100'
-              }`}
-            >
-              <TrendingDown size={14} className="text-rose-500 mb-1" />
-              <span
-                className={`text-2xl font-bold ${
-                  isDark ? 'text-white' : 'text-slate-900'
+                <TrendingUp size={14} className="text-[#06948E] mb-1" />
+                <span
+                  className={`text-2xl font-bold whitespace-nowrap break-keep ${
+                    isDark ? 'text-white' : 'text-slate-900'
+                  }`}
+                  style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
+                >
+                  {strongestSessionItem.char}
+                </span>
+                <span className="text-[8px] font-black uppercase text-[#06948E]">
+                  Strongest
+                </span>
+              </div>
+            )}
+            {showNeedsFocusSlot && (
+              <div
+                className={`p-3 rounded-[2.5rem] border flex flex-col items-center ${
+                  isDark
+                    ? 'bg-rose-500/5 border-rose-500/20'
+                    : 'bg-rose-50 border-rose-100'
                 }`}
-                style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
+                aria-label={
+                  showEmptyWeakest
+                    ? 'Needs focus: no misses this session'
+                    : undefined
+                }
               >
-                {sortedSummaryPool[sortedSummaryPool.length - 1]?.char}
-              </span>
-              <span className="text-[8px] font-black uppercase text-rose-600">
-                Needs Focus
-              </span>
-            </div>
+                <TrendingDown size={14} className="text-rose-500 mb-1" />
+                <span
+                  className={`flex min-h-[2.25rem] w-full items-center justify-center text-2xl font-bold whitespace-nowrap break-keep ${
+                    showFilledWeakest
+                      ? isDark
+                        ? 'text-white'
+                        : 'text-slate-900'
+                      : 'text-transparent select-none'
+                  }`}
+                  style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
+                >
+                  {showFilledWeakest ? weakestSessionItem.char : '\u00a0'}
+                </span>
+                <span className="text-[8px] font-black uppercase text-rose-600">
+                  Needs Focus
+                </span>
+              </div>
+            )}
           </div>
         )}
 
@@ -239,45 +334,66 @@ const ResultsView = ({
             </div>
           </div>
           <div className="space-y-1">
-            {sortedList.map((item) => {
-              const s = sessionStats.charData[item.id] || {
-                correct: 0,
-                wrong: 0,
-                sessionPoints: 0,
-              };
-              return (
-                <div
-                  key={item.id}
-                  className={`flex items-center gap-4 p-2 px-4 rounded-xl border ${
-                    isDark
-                      ? 'bg-slate-800/30 border-slate-700'
-                      : 'bg-slate-50 border-slate-100'
-                  }`}
-                >
-                  <span
-                    style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
-                    className={`text-xl font-bold w-16 whitespace-nowrap ${
-                      isDark ? 'text-white' : 'text-slate-900'
+            {sortedList.length === 0 ? (
+              <p
+                className={`text-center text-xs py-6 px-4 ${
+                  isDark ? 'text-slate-500' : 'text-slate-400'
+                }`}
+              >
+                No answers recorded this run—stats appear here once you respond to at
+                least one card.
+              </p>
+            ) : (
+              sortedList.map((item) => {
+                const s = sessionStats.charData[item.id] || {
+                  correct: 0,
+                  wrong: 0,
+                  sessionPoints: 0,
+                };
+                return (
+                  <div
+                    key={item.id}
+                    className={`flex items-center gap-4 p-2 px-4 rounded-xl border ${
+                      isDark
+                        ? 'bg-slate-800/30 border-slate-700'
+                        : 'bg-slate-50 border-slate-100'
                     }`}
                   >
-                    {item.char}
-                  </span>
-                  <div className="flex-1 flex items-center justify-end gap-6 text-sm font-black">
-                    <span className="text-[#06948E] w-8 text-right">
-                      {s.correct}
-                    </span>
-                    <span className="text-rose-500 w-8 text-right">
-                      {s.wrong}
-                    </span>
-                    <span className="text-blue-500 w-10 text-right">
-                      {s.sessionPoints > 0
-                        ? `+${s.sessionPoints}`
-                        : s.sessionPoints}
-                    </span>
+                    <div className="flex min-w-0 max-w-[55%] flex-1 items-center gap-2 sm:gap-3">
+                      <span
+                        style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
+                        className={`shrink-0 text-xl font-bold whitespace-nowrap break-keep ${
+                          isDark ? 'text-white' : 'text-slate-900'
+                        }`}
+                      >
+                        {item.char}
+                      </span>
+                      <span
+                        className={`truncate text-left text-[11px] font-black uppercase tracking-wide ${
+                          isDark ? 'text-slate-400' : 'text-slate-500'
+                        }`}
+                        title={item.romaji ?? ''}
+                      >
+                        {item.romaji ?? ''}
+                      </span>
+                    </div>
+                    <div className="flex shrink-0 items-center justify-end gap-4 text-sm font-black sm:gap-6">
+                      <span className="text-[#06948E] w-8 text-right">
+                        {sessionCount(s.correct)}
+                      </span>
+                      <span className="text-rose-500 w-8 text-right">
+                        {sessionCount(s.wrong)}
+                      </span>
+                      <span className="text-blue-500 w-10 text-right">
+                        {s.sessionPoints > 0
+                          ? `+${s.sessionPoints}`
+                          : s.sessionPoints}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       </div>

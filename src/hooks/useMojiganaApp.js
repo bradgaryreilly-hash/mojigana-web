@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   KANA_DICT,
   NUM_DICT,
@@ -54,14 +54,54 @@ export const useMojiganaApp = () => {
     wrong: 0,
     pointsChange: 0,
     charData: {},
+    poolSnapshot: null,
   });
 
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const persistSnapshotRef = useRef(null);
+  const currentViewRef = useRef(currentView);
+  const prevViewRef = useRef(null);
   const isDark = theme === 'dark';
   const currentQuizItem = quizQueue[0] || null;
   const nextQuizItem = quizQueue[1] || null;
+
+  useEffect(() => {
+    currentViewRef.current = currentView;
+  }, [currentView]);
+
+  const clearQuizEphemeralState = useCallback(() => {
+    setSessionStats({
+      correct: 0,
+      wrong: 0,
+      pointsChange: 0,
+      charData: {},
+      poolSnapshot: null,
+    });
+    setQuizQueue([]);
+    setQuizOptions([]);
+    setPrevQuizItem(null);
+    setInputValue('');
+    setIsCorrect(false);
+    setIsWrong(false);
+    setShowingAnswer(false);
+    setIsPaused(false);
+    setTimeLeft(0);
+  }, []);
+
+  /** Leaving quiz or results drops in-memory session data; nothing is restored next visit. */
+  useEffect(() => {
+    const prev = prevViewRef.current;
+    if (
+      prev !== null &&
+      (prev === 'quiz' || prev === 'results') &&
+      currentView !== 'quiz' &&
+      currentView !== 'results'
+    ) {
+      clearQuizEphemeralState();
+    }
+    prevViewRef.current = currentView;
+  }, [currentView, clearQuizEphemeralState]);
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -84,8 +124,11 @@ export const useMojiganaApp = () => {
       weights,
     };
     persistSnapshotRef.current = slice;
-    schedulePersist(slice);
+    if (currentView !== 'quiz') {
+      schedulePersist(slice);
+    }
   }, [
+    currentView,
     theme,
     scriptMode,
     selectedIds,
@@ -100,6 +143,7 @@ export const useMojiganaApp = () => {
 
   useEffect(() => {
     const saveNow = () => {
+      if (currentViewRef.current === 'quiz') return;
       if (persistSnapshotRef.current) flushPersist(persistSnapshotRef.current);
     };
     const onVisibility = () => {
@@ -200,30 +244,33 @@ export const useMojiganaApp = () => {
     );
   };
 
-  const getPool = () =>
-    selectedIds.map((id) => {
-      const [typePrefix, key] = id.split('_');
-      if (typePrefix === 'n') {
-        const item = NUM_DICT[key];
+  const getPool = useCallback(
+    () =>
+      selectedIds.map((id) => {
+        const [typePrefix, key] = id.split('_');
+        if (typePrefix === 'n') {
+          const item = NUM_DICT[key];
+          return {
+            id,
+            romaji: item.romaji,
+            digit: key,
+            char: item.char,
+            type: 'numbers',
+            aliases: [key, ...(item.aliases || [])],
+          };
+        }
+        const item = KANA_DICT[key];
+        const char = typePrefix === 'h' ? item.h : item.k;
         return {
           id,
-          romaji: item.romaji,
-          digit: key,
-          char: item.char,
-          type: 'numbers',
-          aliases: [key, ...(item.aliases || [])],
+          romaji: key,
+          char,
+          type: typePrefix === 'h' ? 'hiragana' : 'katakana',
+          aliases: item.aliases || [],
         };
-      }
-      const item = KANA_DICT[key];
-      const char = typePrefix === 'h' ? item.h : item.k;
-      return {
-        id,
-        romaji: key,
-        char,
-        type: typePrefix === 'h' ? 'hiragana' : 'katakana',
-        aliases: item.aliases || [],
-      };
-    });
+      }),
+    [selectedIds],
+  );
 
   const generateBatch = (currentWeights) => {
     const pool = getPool();
@@ -241,7 +288,19 @@ export const useMojiganaApp = () => {
 
   const startQuiz = () => {
     if (selectedIds.length === 0) return;
-    setSessionStats({ correct: 0, wrong: 0, pointsChange: 0, charData: {} });
+    const pool = getPool();
+    /**
+     * Session = one run from Start Quiz until you leave quiz or results.
+     * poolSnapshot freezes which characters belonged to this run so Session Stats
+     * cannot drift from live getPool() (e.g. selection/script changes elsewhere).
+     */
+    setSessionStats({
+      correct: 0,
+      wrong: 0,
+      pointsChange: 0,
+      charData: {},
+      poolSnapshot: pool.map((p) => ({ ...p })),
+    });
     setTimeLeft(sessionDuration * 60);
     setIsPaused(false);
     setCurrentView('quiz');

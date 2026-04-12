@@ -95,7 +95,6 @@ const App = () => {
           <ResultsView
             isDark={app.isDark}
             sessionStats={app.sessionStats}
-            mastery={app.mastery}
             getPool={app.getPool}
             sortConfig={app.sortConfig}
             setSortConfig={app.setSortConfig}

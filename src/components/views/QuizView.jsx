@@ -106,8 +106,11 @@ const QuizView = ({
                 {prevQuizItem && (
                   <>
                     <span
-                      style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
-                      className={`${
+                      style={{
+                        fontFamily: "'Sawarabi Gothic', sans-serif",
+                        wordBreak: 'keep-all',
+                      }}
+                      className={`whitespace-nowrap ${
                         prevQuizItem.char.length > 1 ? 'text-4xl' : 'text-6xl'
                       } font-bold ${
                         isDark ? 'text-white/30' : 'text-slate-900/30'
@@ -182,7 +185,9 @@ const QuizView = ({
               </div>
             )}
             <div
-              style={{ fontSize: 'clamp(1rem, 8vw, 1.5rem)' }}
+              style={{
+                fontSize: 'clamp(0.9rem, 5.5vmin, 1.5rem)',
+              }}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -216,16 +221,17 @@ const QuizView = ({
                     <span
                       style={{
                         fontFamily: "'Sawarabi Gothic', sans-serif",
+                        wordBreak: 'keep-all',
                         filter: isCorrect
                           ? 'drop-shadow(0 0 15px #22c55e)'
                           : isWrong
                             ? 'drop-shadow(0 0 15px #ef4444)'
                             : 'none',
                       }}
-                      className={`max-w-full text-center leading-none select-none font-bold ${
+                      className={`max-w-full text-center leading-none select-none font-bold whitespace-nowrap ${
                         isDark ? 'text-slate-100' : 'text-slate-950'
                       } ${
-                        currentQuizItem?.char.length > 1 ? 'text-[4em]' : 'text-[5em]'
+                        currentQuizItem?.char.length > 1 ? 'text-[3.35em]' : 'text-[5em]'
                       }`}
                     >
                       {currentQuizItem?.char}
@@ -264,8 +270,11 @@ const QuizView = ({
               >
                 {nextQuizItem && (
                   <span
-                    style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
-                    className={`${
+                    style={{
+                      fontFamily: "'Sawarabi Gothic', sans-serif",
+                      wordBreak: 'keep-all',
+                    }}
+                    className={`whitespace-nowrap ${
                       nextQuizItem.char.length > 1 ? 'text-4xl' : 'text-6xl'
                     } font-bold ${isDark ? 'text-white/30' : 'text-slate-900/30'}`}
                   >

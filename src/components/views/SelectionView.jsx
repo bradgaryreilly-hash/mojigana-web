@@ -52,6 +52,7 @@ const SelectionView = ({
     const item = type === 'numbers' ? NUM_DICT[key] : KANA_DICT[key];
     const char =
       type === 'numbers' ? item.char : scriptMode === 'katakana' ? item.k : item.h;
+    const isMultiGlyphChar = char.length > 1;
     const info = getMedalDisplayInfo(mastery[id] || 0, isDark);
 
     return (
@@ -65,7 +66,7 @@ const SelectionView = ({
           borderWidth: '2px',
           boxShadow: isSelected ? `0 0 15px ${info.color}44` : 'none',
           transform: isSelected ? 'scale(1.05)' : 'scale(1)',
-          fontSize: 'clamp(0.6rem, 1.8vw, 1.1rem)',
+          fontSize: 'clamp(0.6rem, min(1.8vw, 2.4vmin), 1.1rem)',
         }}
         className={`aspect-square w-full flex flex-col items-center justify-between rounded-xl transition-all relative p-1 sm:p-1.5 ${
           isSelected ? 'z-10 shadow-lg' : ''
@@ -82,8 +83,13 @@ const SelectionView = ({
         )}
         <div className="flex-1 flex items-center justify-center w-full min-h-0 overflow-hidden mt-[5%]">
           <span
-            style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
-            className={`font-bold leading-none transition-colors whitespace-nowrap overflow-hidden text-ellipsis text-[1.8em] ${
+            style={{
+              fontFamily: "'Sawarabi Gothic', sans-serif",
+              wordBreak: 'keep-all',
+            }}
+            className={`font-bold leading-none transition-colors whitespace-nowrap overflow-hidden text-ellipsis ${
+              isMultiGlyphChar ? 'text-[1.35em]' : 'text-[1.8em]'
+            } ${
               isDark
                 ? isSelected
                   ? 'text-white'
