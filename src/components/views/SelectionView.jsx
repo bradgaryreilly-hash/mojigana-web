@@ -263,7 +263,7 @@ const SelectionView = ({
           }`}
         >
           <div
-            className={`flex gap-1 rounded-3xl p-1 ${
+            className={`flex gap-1 rounded-3xl p-1 pt-2.5 ${
               isDark ? 'bg-slate-900/60' : 'bg-slate-200/40'
             }`}
           >
@@ -271,32 +271,33 @@ const SelectionView = ({
               const count = selectionCountByMode[m];
               const active = scriptMode === m;
               return (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setScriptMode(m)}
-                  className={`relative flex min-h-8 flex-1 items-center justify-center rounded-xl py-2 text-xs font-bold uppercase transition-all ${
-                    active
-                      ? isDark
-                        ? 'bg-slate-700 text-white shadow-md'
-                        : 'bg-white text-slate-800 shadow-md'
-                      : isDark
-                        ? 'text-slate-400 hover:text-slate-200'
-                        : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
+                <div key={m} className="relative min-w-0 flex-1">
                   {count > 0 && (
                     <span
-                      className="pointer-events-none absolute left-2 top-1/2 z-10 flex h-[1.25rem] min-w-[1.25rem] -translate-y-1/2 items-center justify-center rounded-full bg-[#06948E] px-1.5 text-[10px] font-black leading-none text-white shadow-sm ring-1 ring-black/10 tabular-nums dark:ring-white/20"
+                      className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-0.5 flex h-[1.25rem] min-w-[1.25rem] -translate-x-1/2 translate-y-1 items-center justify-center rounded-full bg-[#06948E] px-1.5 text-xs font-black leading-none text-white shadow-md ring-1 ring-black/10 tabular-nums dark:ring-white/20"
                       aria-hidden
                     >
                       {count}
                     </span>
                   )}
-                  <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-center">
-                    {m}
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setScriptMode(m)}
+                    className={`relative flex min-h-8 w-full items-center justify-center rounded-xl py-2 text-xs font-bold uppercase transition-all ${
+                      active
+                        ? isDark
+                          ? 'bg-slate-700 text-white shadow-md'
+                          : 'bg-white text-slate-800 shadow-md'
+                        : isDark
+                          ? 'text-slate-400 hover:text-slate-200'
+                          : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-center">
+                      {m}
+                    </span>
+                  </button>
+                </div>
               );
             })}
           </div>
