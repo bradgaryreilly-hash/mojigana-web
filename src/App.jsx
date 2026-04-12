@@ -86,6 +86,7 @@ const App = () => {
             quizOptions={app.quizOptions}
             handleInputChange={app.handleInputChange}
             handleQuizInputKeyDown={app.handleQuizInputKeyDown}
+            handleQuizInputBeforeInput={app.handleQuizInputBeforeInput}
             manualAnswerConfirm={app.manualAnswerConfirm}
             inputRef={app.inputRef}
             inputValue={app.inputValue}

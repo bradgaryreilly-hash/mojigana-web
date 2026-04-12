@@ -33,6 +33,7 @@ const QuizView = ({
   quizOptions,
   handleInputChange,
   handleQuizInputKeyDown,
+  handleQuizInputBeforeInput,
   manualAnswerConfirm,
   inputRef,
   inputValue,
@@ -365,6 +366,7 @@ const QuizView = ({
                   disabled={isPaused}
                   value={inputValue}
                   onChange={handleInputChange}
+                  onBeforeInput={handleQuizInputBeforeInput}
                   onKeyDown={handleQuizInputKeyDown}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}

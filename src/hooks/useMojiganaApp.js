@@ -525,6 +525,34 @@ export const useMojiganaApp = () => {
     }
   };
 
+  /**
+   * Mobile keyboards often skip keydown for Space/Enter; beforeinput still fires.
+   * Space: insertText with data " " — prevent so the field does not gain a space.
+   */
+  const handleQuizInputBeforeInput = (e) => {
+    if (
+      !manualAnswerConfirm ||
+      isMultipleChoice ||
+      isCorrect ||
+      isWrong ||
+      isPaused
+    ) {
+      return;
+    }
+    const ni = e.nativeEvent;
+    if (typeof InputEvent === 'undefined' || !(ni instanceof InputEvent)) return;
+
+    if (ni.inputType === 'insertText' && ni.data === ' ') {
+      e.preventDefault();
+      submitTypedAnswer(e.currentTarget.value);
+      return;
+    }
+    if (ni.inputType === 'insertLineBreak') {
+      e.preventDefault();
+      submitTypedAnswer(e.currentTarget.value);
+    }
+  };
+
   return {
     currentView,
     setCurrentView,
@@ -581,5 +609,6 @@ export const useMojiganaApp = () => {
     startQuiz,
     handleInputChange,
     handleQuizInputKeyDown,
+    handleQuizInputBeforeInput,
   };
 };
