@@ -7,4 +7,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: process.env.VITE_PAGES_BASE || '/',
+  build: {
+    // Avoid modulepreload polyfill at top of entry; on some WebKit builds a thrown
+    // error there would skip the rest of bootstrap (stuck on "Loading…").
+    modulePreload: false,
+  },
 })
