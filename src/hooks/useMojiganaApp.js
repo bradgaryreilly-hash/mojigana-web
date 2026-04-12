@@ -1,4 +1,11 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from 'react';
 import {
   KANA_DICT,
   NUM_DICT,
@@ -159,8 +166,10 @@ export const useMojiganaApp = () => {
    * Lock document scroll on the quiz screen so the layout viewport does not move under
    * the shell. Quiz content scrolls inside QuizView instead (avoids iOS Safari fighting
    * visualViewport scroll handlers and leaving the header off-screen).
+   * useLayoutEffect runs before paint with QuizView’s own layout reset so the first frame
+   * is not scrolled down.
    */
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (currentView !== 'quiz') return;
 
     const html = document.documentElement;
@@ -173,6 +182,8 @@ export const useMojiganaApp = () => {
       const root = document.scrollingElement ?? html;
       window.scrollTo(0, 0);
       root.scrollTop = 0;
+      html.scrollTop = 0;
+      document.body.scrollTop = 0;
     };
 
     pinDocumentTop();

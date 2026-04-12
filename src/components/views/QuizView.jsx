@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import {
   Play,
   ChevronLeft,
@@ -41,7 +42,54 @@ const QuizView = ({
   isFocused,
   setIsFocused,
 }) => {
+  const scrollAreaRef = useRef(null);
   const timerText = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
+
+  useLayoutEffect(() => {
+    let alive = true;
+
+    const pinDocumentTop = () => {
+      const html = document.documentElement;
+      const root = document.scrollingElement ?? html;
+      window.scrollTo(0, 0);
+      root.scrollTop = 0;
+      html.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    const resetQuizScroll = () => {
+      pinDocumentTop();
+      const area = scrollAreaRef.current;
+      if (area) {
+        area.scrollTop = 0;
+        area.scrollLeft = 0;
+      }
+    };
+
+    const focusInputWithoutScroll = () => {
+      if (isMultipleChoice || isPaused) return;
+      inputRef.current?.focus({ preventScroll: true });
+    };
+
+    resetQuizScroll();
+    focusInputWithoutScroll();
+
+    const id = requestAnimationFrame(() => {
+      if (!alive) return;
+      resetQuizScroll();
+      focusInputWithoutScroll();
+      requestAnimationFrame(() => {
+        if (!alive) return;
+        resetQuizScroll();
+        focusInputWithoutScroll();
+      });
+    });
+
+    return () => {
+      alive = false;
+      cancelAnimationFrame(id);
+    };
+  }, [isMultipleChoice, isPaused, inputRef]);
 
   return (
     <div
@@ -50,7 +98,7 @@ const QuizView = ({
       }`}
     >
       <header
-        className={`flex h-14 shrink-0 items-center justify-between border-b px-4 ${
+        className={`relative flex h-14 shrink-0 items-center justify-between border-b px-4 ${
           isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-100 bg-white'
         }`}
       >
@@ -92,7 +140,10 @@ const QuizView = ({
           </button>
         </div>
       </header>
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-start gap-4 overflow-y-auto overflow-x-hidden overscroll-y-contain px-4 pb-4 pt-2 [-webkit-overflow-scrolling:touch]">
+      <div
+        ref={scrollAreaRef}
+        className="flex min-h-0 flex-1 flex-col items-center justify-start gap-4 overflow-y-auto overflow-x-hidden overscroll-y-contain px-4 pb-4 pt-2 [-webkit-overflow-scrolling:touch]"
+      >
         <div className="grid grid-cols-[1fr_2fr_1fr] items-stretch justify-center w-full max-w-xl gap-4 min-h-0">
           <div className="flex flex-col h-full min-h-0 w-full min-w-0">
             <div
@@ -363,7 +414,6 @@ const QuizView = ({
                 <input
                   ref={inputRef}
                   type="text"
-                  autoFocus
                   disabled={isPaused}
                   value={inputValue}
                   onChange={handleInputChange}
