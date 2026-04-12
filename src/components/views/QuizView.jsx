@@ -32,6 +32,8 @@ const QuizView = ({
   isMultipleChoice,
   quizOptions,
   handleInputChange,
+  handleQuizInputKeyDown,
+  manualAnswerConfirm,
   inputRef,
   inputValue,
   isFocused,
@@ -363,9 +365,16 @@ const QuizView = ({
                   disabled={isPaused}
                   value={inputValue}
                   onChange={handleInputChange}
+                  onKeyDown={handleQuizInputKeyDown}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
-                  placeholder={isPaused ? 'Paused' : 'Answer...'}
+                  placeholder={
+                    isPaused
+                      ? 'Paused'
+                      : manualAnswerConfirm
+                        ? 'Enter or Space…'
+                        : 'Answer...'
+                  }
                   autoComplete="off"
                   className={`w-full rounded-[16px] sm:rounded-[21px] py-2.5 sm:py-4 text-center text-xl sm:text-3xl font-black focus:outline-none transition-all ${
                     isPaused

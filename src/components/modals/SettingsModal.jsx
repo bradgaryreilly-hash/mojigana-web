@@ -13,6 +13,8 @@ const SettingsModal = ({
   setShowPrev,
   showNext,
   setShowNext,
+  manualAnswerConfirm,
+  setManualAnswerConfirm,
   setInfoModal,
 }) => {
   if (!isSettingsOpen) return null;
@@ -64,6 +66,64 @@ const SettingsModal = ({
                 }`}
               />
             </button>
+          </div>
+          <div
+            className={`space-y-2 rounded-2xl transition-[opacity,filter] duration-200 ${
+              isMultipleChoice
+                ? 'pointer-events-none opacity-[0.42] grayscale'
+                : ''
+            }`}
+            aria-disabled={isMultipleChoice}
+          >
+            <div className="flex flex-col gap-1">
+              <span className="font-bold text-sm">Submit answer</span>
+              <span className="text-[10px] text-slate-500 font-medium leading-snug">
+                Typing mode only. Auto checks as you type; Manual uses Enter or Space
+                to submit.
+              </span>
+            </div>
+            <div
+              className={`flex rounded-full p-0.5 ${
+                isDark ? 'bg-slate-900/90' : 'bg-slate-100'
+              }`}
+              role="group"
+              aria-label="Submit answer mode"
+            >
+              <button
+                type="button"
+                disabled={isMultipleChoice}
+                aria-pressed={!manualAnswerConfirm}
+                onClick={() => setManualAnswerConfirm(false)}
+                className={`flex-1 rounded-full py-2 text-xs font-black uppercase tracking-wide transition-all active:scale-[0.99] ${
+                  !manualAnswerConfirm
+                    ? isDark
+                      ? 'bg-emerald-500 text-slate-900 shadow-sm'
+                      : 'bg-white text-[#06948E] shadow-sm'
+                    : isDark
+                      ? 'text-slate-400'
+                      : 'text-slate-500'
+                }`}
+              >
+                Auto
+              </button>
+              <button
+                type="button"
+                disabled={isMultipleChoice}
+                aria-pressed={manualAnswerConfirm}
+                onClick={() => setManualAnswerConfirm(true)}
+                className={`flex-1 rounded-full py-2 text-xs font-black uppercase tracking-wide transition-all active:scale-[0.99] ${
+                  manualAnswerConfirm
+                    ? isDark
+                      ? 'bg-emerald-500 text-slate-900 shadow-sm'
+                      : 'bg-white text-[#06948E] shadow-sm'
+                    : isDark
+                      ? 'text-slate-400'
+                      : 'text-slate-500'
+                }`}
+              >
+                Manual
+              </button>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex flex-col">

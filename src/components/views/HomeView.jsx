@@ -79,10 +79,10 @@ const HomeView = ({
           sits the same distance from あ below and from the button above.
         */}
         <div className="flex w-full max-w-[90vw] flex-col items-center gap-y-12">
-          <div className="relative flex w-96 max-w-full items-center justify-center min-h-[min(90vw,24rem)]">
+          <div className="relative flex w-full max-w-full items-center justify-center">
             <span
               style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
-              className={`relative z-10 inline-block bg-clip-text font-black text-[clamp(7rem,36vw,12rem)] text-transparent bg-gradient-to-br filter drop-shadow-[0_22px_55px_rgba(14,165,233,0.45)] ${
+              className={`relative z-10 inline-block bg-clip-text text-[13rem] font-black tracking-tight text-transparent bg-gradient-to-br filter drop-shadow-[0_22px_55px_rgba(14,165,233,0.45)] ${
                 isDark
                   ? 'from-[#06B6D4] from-20% to-[#10B981] to-80%'
                   : 'from-[#0891B2] from-20% to-[#059669] to-80%'

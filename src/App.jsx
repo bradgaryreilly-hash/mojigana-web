@@ -8,8 +8,8 @@ import MasteryGuideModal from './components/modals/MasteryGuideModal';
 import InfoPagesModal from './components/modals/InfoPagesModal';
 
 /**
- * MojiGana - Version 7.7.2
- * Update: Filtered Multiple Choice Distractors & Data Corrections
+ * MojiGana - Version 7.7.3
+ * Update: Manual confirm option for typed quiz answers (Enter / Space to submit)
  */
 const App = () => {
   const app = useMojiganaApp();
@@ -85,6 +85,8 @@ const App = () => {
             isMultipleChoice={app.isMultipleChoice}
             quizOptions={app.quizOptions}
             handleInputChange={app.handleInputChange}
+            handleQuizInputKeyDown={app.handleQuizInputKeyDown}
+            manualAnswerConfirm={app.manualAnswerConfirm}
             inputRef={app.inputRef}
             inputValue={app.inputValue}
             isFocused={app.isFocused}
@@ -113,6 +115,8 @@ const App = () => {
           setShowPrev={app.setShowPrev}
           showNext={app.showNext}
           setShowNext={app.setShowNext}
+          manualAnswerConfirm={app.manualAnswerConfirm}
+          setManualAnswerConfirm={app.setManualAnswerConfirm}
           setInfoModal={app.setInfoModal}
         />
         <InfoPagesModal

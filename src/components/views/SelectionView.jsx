@@ -259,12 +259,10 @@ const SelectionView = ({
                 key={m}
                 type="button"
                 onClick={() => setScriptMode(m)}
-                className={`flex-1 py-3 text-xs font-bold uppercase rounded-xl ${
+                className={`flex-1 py-3 text-xs font-bold uppercase rounded-xl transition-all ${
                   scriptMode === m
-                    ? isDark
-                      ? 'bg-slate-800 text-white shadow-sm'
-                      : 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-500 opacity-70'
+                    ? 'bg-[#06948E] text-white shadow-md'
+                    : 'text-slate-500'
                 }`}
               >
                 {m}
@@ -432,10 +430,10 @@ const SelectionView = ({
           <button
             type="button"
             onClick={() => setSelectedIds([])}
-            className={`flex items-center gap-2 px-10 py-2 rounded-full border shadow-sm transition-all active:scale-95 ${
+            className={`flex items-center gap-2 px-10 py-2 rounded-full border shadow-sm transition-all active:scale-95 text-[#06948E] ${
               isDark
-                ? 'bg-[#06948E]/10 border-[#06948E]/30 text-slate-100'
-                : 'bg-[#06948E]/5 border-[#06948E]/20 text-[#06948E]'
+                ? 'bg-[#06948E]/10 border-[#06948E]/35'
+                : 'bg-[#06948E]/5 border-[#06948E]/25'
             }`}
           >
             <RotateCcw size={14} />

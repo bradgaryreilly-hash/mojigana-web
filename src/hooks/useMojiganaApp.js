@@ -29,6 +29,9 @@ export const useMojiganaApp = () => {
   );
   const [showPrev, setShowPrev] = useState(() => persisted?.showPrev ?? true);
   const [showNext, setShowNext] = useState(() => persisted?.showNext ?? true);
+  const [manualAnswerConfirm, setManualAnswerConfirm] = useState(
+    () => persisted?.manualAnswerConfirm ?? false,
+  );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isMasteryInfoOpen, setIsMasteryInfoOpen] = useState(false);
   const [infoModal, setInfoModal] = useState(null);
@@ -103,6 +106,52 @@ export const useMojiganaApp = () => {
     prevViewRef.current = currentView;
   }, [currentView, clearQuizEphemeralState]);
 
+  /** Mobile browsers scroll the document to keep the answer field in view, which clips the quiz header. Pin the page to the top while on the quiz screen. */
+  useEffect(() => {
+    if (currentView !== 'quiz') return;
+
+    const html = document.documentElement;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+    html.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    const pinDocumentTop = () => {
+      const root = document.scrollingElement ?? html;
+      window.scrollTo(0, 0);
+      root.scrollTop = 0;
+    };
+
+    pinDocumentTop();
+
+    const vv = window.visualViewport;
+    const onVisualViewport = () => pinDocumentTop();
+    if (vv) {
+      vv.addEventListener('resize', onVisualViewport);
+      vv.addEventListener('scroll', onVisualViewport);
+    }
+    window.addEventListener('scroll', pinDocumentTop, { passive: true });
+
+    const onFocusIn = (e) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        requestAnimationFrame(pinDocumentTop);
+        requestAnimationFrame(() => requestAnimationFrame(pinDocumentTop));
+      }
+    };
+    document.addEventListener('focusin', onFocusIn);
+
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+      if (vv) {
+        vv.removeEventListener('resize', onVisualViewport);
+        vv.removeEventListener('scroll', onVisualViewport);
+      }
+      window.removeEventListener('scroll', pinDocumentTop);
+      document.removeEventListener('focusin', onFocusIn);
+    };
+  }, [currentView]);
+
   useEffect(() => {
     const link = document.createElement('link');
     link.href = 'https://fonts.googleapis.com/css2?family=Sawarabi+Gothic&display=swap';
@@ -119,6 +168,7 @@ export const useMojiganaApp = () => {
       isMultipleChoice,
       showPrev,
       showNext,
+      manualAnswerConfirm,
       sessionDuration,
       mastery,
       weights,
@@ -136,6 +186,7 @@ export const useMojiganaApp = () => {
     isMultipleChoice,
     showPrev,
     showNext,
+    manualAnswerConfirm,
     sessionDuration,
     mastery,
     weights,
@@ -334,11 +385,12 @@ export const useMojiganaApp = () => {
     setShowingAnswer(false);
   };
 
-  const handleInputChange = (e) => {
-    if (isCorrect || isWrong || isPaused) return;
-    const val = e.target.value.toLowerCase().trim();
-    setInputValue(e.target.value);
-    if (!currentQuizItem) return;
+  /** Full-string check: multiple-choice picks, manual typing (Enter / Space), and wrong answers that are not valid prefixes. */
+  const submitTypedAnswer = (raw) => {
+    if (isCorrect || isWrong || isPaused || !currentQuizItem) return;
+    const val = raw.toLowerCase().trim();
+    if (val.length === 0) return;
+
     const allPossible = [
       currentQuizItem.romaji,
       ...(currentQuizItem.aliases || []),
@@ -376,10 +428,7 @@ export const useMojiganaApp = () => {
       setTimeout(() => {
         shiftQueue();
       }, 150);
-    } else if (
-      val.length > 0 &&
-      !allPossible.some((answer) => answer.startsWith(val))
-    ) {
+    } else {
       const oldScore = mastery[charId] || 0;
       const rank = getMedalDisplayInfo(oldScore, isDark);
       const actualPenalty = Math.min(rank.penalty, oldScore);
@@ -427,6 +476,55 @@ export const useMojiganaApp = () => {
     }
   };
 
+  const handleInputChange = (e) => {
+    if (isCorrect || isWrong || isPaused) return;
+    const raw = e.target.value;
+
+    if (isMultipleChoice) {
+      setInputValue(raw);
+      submitTypedAnswer(raw);
+      return;
+    }
+
+    if (manualAnswerConfirm) {
+      setInputValue(raw);
+      return;
+    }
+
+    const val = raw.toLowerCase().trim();
+    setInputValue(raw);
+    if (!currentQuizItem) return;
+    const allPossible = [
+      currentQuizItem.romaji,
+      ...(currentQuizItem.aliases || []),
+    ];
+
+    if (allPossible.includes(val)) {
+      submitTypedAnswer(raw);
+    } else if (
+      val.length > 0 &&
+      !allPossible.some((answer) => answer.startsWith(val))
+    ) {
+      submitTypedAnswer(raw);
+    }
+  };
+
+  const handleQuizInputKeyDown = (e) => {
+    if (
+      !manualAnswerConfirm ||
+      isMultipleChoice ||
+      isCorrect ||
+      isWrong ||
+      isPaused
+    ) {
+      return;
+    }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      submitTypedAnswer(e.currentTarget.value);
+    }
+  };
+
   return {
     currentView,
     setCurrentView,
@@ -442,6 +540,8 @@ export const useMojiganaApp = () => {
     setShowPrev,
     showNext,
     setShowNext,
+    manualAnswerConfirm,
+    setManualAnswerConfirm,
     isSettingsOpen,
     setIsSettingsOpen,
     isMasteryInfoOpen,
@@ -480,5 +580,6 @@ export const useMojiganaApp = () => {
     getPool,
     startQuiz,
     handleInputChange,
+    handleQuizInputKeyDown,
   };
 };
