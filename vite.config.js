@@ -77,7 +77,7 @@ function inlineIifeBundle() {
       const safe = js.replace(/<\/script/gi, '<\\/script')
       // Replacement must be a function: minified JS contains `$&`, `$1`, etc.; a string
       // replacement would interpret `$` and corrupt the bundle (and inject </script>).
-      html = html.replace(re, () => `<script>${safe}<\/script>`)
+      html = html.replace(re, () => `<script>${safe}</script>`)
       await fs.writeFile(htmlPath, html, 'utf-8')
       try {
         await fs.unlink(jsPath)

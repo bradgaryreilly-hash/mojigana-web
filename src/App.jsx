@@ -4,7 +4,6 @@ import SelectionView from './components/views/SelectionView';
 import QuizView from './components/views/QuizView';
 import ResultsView from './components/views/ResultsView';
 import SettingsModal from './components/modals/SettingsModal';
-import MasteryGuideModal from './components/modals/MasteryGuideModal';
 import InfoPagesModal from './components/modals/InfoPagesModal';
 
 /**
@@ -46,17 +45,14 @@ const App = () => {
             setScriptMode={app.setScriptMode}
             selectedIds={app.selectedIds}
             setSelectedIds={app.setSelectedIds}
-            mastery={app.mastery}
             sessionDuration={app.sessionDuration}
             setSessionDuration={app.setSessionDuration}
             setCurrentView={app.setCurrentView}
             toggleTheme={app.toggleTheme}
             setIsSettingsOpen={app.setIsSettingsOpen}
-            setIsMasteryInfoOpen={app.setIsMasteryInfoOpen}
             startQuiz={app.startQuiz}
             getId={app.getId}
             toggleKana={app.toggleKana}
-            toggleMedalGroup={app.toggleMedalGroup}
             toggleRow={app.toggleRow}
             toggleCol={app.toggleCol}
             toggleAllInLayout={app.toggleAllInLayout}
@@ -125,11 +121,6 @@ const App = () => {
           isDark={app.isDark}
           infoModal={app.infoModal}
           setInfoModal={app.setInfoModal}
-        />
-        <MasteryGuideModal
-          isDark={app.isDark}
-          isMasteryInfoOpen={app.isMasteryInfoOpen}
-          setIsMasteryInfoOpen={app.setIsMasteryInfoOpen}
         />
       </div>
     </div>

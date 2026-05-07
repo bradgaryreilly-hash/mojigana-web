@@ -66,15 +66,14 @@ export function loadPersistedState() {
           ? data.isMultipleChoice
           : false,
       showPrev:
-        typeof data.showPrev === 'boolean' ? data.showPrev : true,
+        typeof data.showPrev === 'boolean' ? data.showPrev : false,
       showNext:
-        typeof data.showNext === 'boolean' ? data.showNext : true,
+        typeof data.showNext === 'boolean' ? data.showNext : false,
       manualAnswerConfirm:
         typeof data.manualAnswerConfirm === 'boolean'
           ? data.manualAnswerConfirm
           : false,
       sessionDuration,
-      mastery: sanitizeRecord(data.mastery, { intMin: 0, intMax: 500 }),
       weights: sanitizeRecord(data.weights, { intMin: 1, intMax: 4 }),
     };
   } catch {
@@ -94,7 +93,6 @@ function buildPayload(slice) {
     showNext: slice.showNext,
     manualAnswerConfirm: slice.manualAnswerConfirm,
     sessionDuration: slice.sessionDuration,
-    mastery: slice.mastery,
     weights: slice.weights,
   };
 }

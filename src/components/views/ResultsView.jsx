@@ -111,12 +111,10 @@ const ResultsView = ({
     const statsA = sessionStats.charData[a.id] || {
       correct: 0,
       wrong: 0,
-      sessionPoints: 0,
     };
     const statsB = sessionStats.charData[b.id] || {
       correct: 0,
       wrong: 0,
-      sessionPoints: 0,
     };
     let valA;
     let valB;
@@ -127,8 +125,7 @@ const ResultsView = ({
       valA = sessionCount(statsA.wrong);
       valB = sessionCount(statsB.wrong);
     } else {
-      valA = statsA.sessionPoints;
-      valB = statsB.sessionPoints;
+      return 0;
     }
     return sortConfig.direction === 'desc' ? valB - valA : valA - valB;
   });
@@ -329,13 +326,6 @@ const ResultsView = ({
                 onSort={handleSort}
                 colClassName="w-8"
               />
-              <SortHeaderButton
-                label="Pts"
-                sortKey="points"
-                sortConfig={sortConfig}
-                onSort={handleSort}
-                colClassName="w-10"
-              />
             </div>
           </div>
           <div className="space-y-1">
@@ -353,7 +343,6 @@ const ResultsView = ({
                 const s = sessionStats.charData[item.id] || {
                   correct: 0,
                   wrong: 0,
-                  sessionPoints: 0,
                 };
                 return (
                   <div
@@ -388,11 +377,6 @@ const ResultsView = ({
                       </span>
                       <span className="inline-block w-8 text-right tabular-nums text-rose-500">
                         {sessionCount(s.wrong)}
-                      </span>
-                      <span className="inline-block w-10 text-right tabular-nums text-blue-500">
-                        {s.sessionPoints > 0
-                          ? `+${s.sessionPoints}`
-                          : s.sessionPoints}
                       </span>
                     </div>
                   </div>

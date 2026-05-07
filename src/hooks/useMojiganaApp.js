@@ -11,7 +11,6 @@ import {
   NUM_DICT,
 } from '../data/kanaData';
 import { sanitizeQueue, generateChoices } from '../logic/quizFunctions';
-import { getMedalDisplayInfo } from '../lib/medalDisplay';
 import {
   loadPersistedState,
   schedulePersist,
@@ -68,17 +67,15 @@ export const useMojiganaApp = () => {
   const [isMultipleChoice, setIsMultipleChoice] = useState(
     () => persisted?.isMultipleChoice ?? false,
   );
-  const [showPrev, setShowPrev] = useState(() => persisted?.showPrev ?? true);
-  const [showNext, setShowNext] = useState(() => persisted?.showNext ?? true);
+  const [showPrev, setShowPrev] = useState(() => persisted?.showPrev ?? false);
+  const [showNext, setShowNext] = useState(() => persisted?.showNext ?? false);
   const [manualAnswerConfirm, setManualAnswerConfirm] = useState(
     () => persisted?.manualAnswerConfirm ?? false,
   );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isMasteryInfoOpen, setIsMasteryInfoOpen] = useState(false);
   const [infoModal, setInfoModal] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'none', direction: 'desc' });
   const [weights, setWeights] = useState(() => persisted?.weights ?? {});
-  const [mastery, setMastery] = useState(() => persisted?.mastery ?? {});
   const [quizQueue, setQuizQueue] = useState([]);
   const [quizOptions, setQuizOptions] = useState([]);
   const [prevQuizItem, setPrevQuizItem] = useState(null);
@@ -96,7 +93,6 @@ export const useMojiganaApp = () => {
   const [sessionStats, setSessionStats] = useState({
     correct: 0,
     wrong: 0,
-    pointsChange: 0,
     charData: {},
     poolSnapshot: null,
   });
@@ -133,7 +129,6 @@ export const useMojiganaApp = () => {
     setSessionStats({
       correct: 0,
       wrong: 0,
-      pointsChange: 0,
       charData: {},
       poolSnapshot: null,
     });
@@ -157,7 +152,7 @@ export const useMojiganaApp = () => {
       currentView !== 'quiz' &&
       currentView !== 'results'
     ) {
-      clearQuizEphemeralState();
+      queueMicrotask(() => clearQuizEphemeralState());
     }
     prevViewRef.current = currentView;
   }, [currentView, clearQuizEphemeralState]);
@@ -221,7 +216,6 @@ export const useMojiganaApp = () => {
       showNext,
       manualAnswerConfirm,
       sessionDuration,
-      mastery,
       weights,
     };
     persistSnapshotRef.current = slice;
@@ -239,7 +233,6 @@ export const useMojiganaApp = () => {
     showNext,
     manualAnswerConfirm,
     sessionDuration,
-    mastery,
     weights,
   ]);
 
@@ -291,25 +284,6 @@ export const useMojiganaApp = () => {
     const id = getId(key);
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
-  };
-
-  const toggleMedalGroup = (medalName) => {
-    const allKeys =
-      scriptMode === 'numbers' ? Object.keys(NUM_DICT) : Object.keys(KANA_DICT);
-    const targetIds = allKeys
-      .map((k) => getId(k))
-      .filter(
-        (id) => getMedalDisplayInfo(mastery[id] || 0, isDark).name === medalName,
-      );
-    if (targetIds.length === 0) return;
-    const allCurrentlySelected = targetIds.every((id) =>
-      selectedIds.includes(id),
-    );
-    setSelectedIds((prev) =>
-      allCurrentlySelected
-        ? prev.filter((id) => !targetIds.includes(id))
-        : [...new Set([...prev, ...targetIds])],
     );
   };
 
@@ -401,7 +375,6 @@ export const useMojiganaApp = () => {
     setSessionStats({
       correct: 0,
       wrong: 0,
-      pointsChange: 0,
       charData: {},
       poolSnapshot: pool.map((p) => ({ ...p })),
     });
@@ -463,7 +436,6 @@ export const useMojiganaApp = () => {
     });
 
     const charId = currentQuizItem.id;
-    const isEligibleForMastery = selectedIds.length >= 5;
 
     if (allPossible.includes(val)) {
       clearWrongFlashTimer();
@@ -473,27 +445,20 @@ export const useMojiganaApp = () => {
         setSessionStats((prev) => {
           const charData = { ...prev.charData };
           if (!charData[charId]) {
-            charData[charId] = { correct: 0, wrong: 0, sessionPoints: 0 };
+            charData[charId] = { correct: 0, wrong: 0 };
           }
           charData[charId].correct += 1;
-          if (isEligibleForMastery) charData[charId].sessionPoints += 1;
           return {
             ...prev,
             correct: prev.correct + 1,
-            pointsChange:
-              prev.pointsChange + (isEligibleForMastery ? 1 : 0),
             charData,
           };
         });
       }
-      if (isEligibleForMastery) {
+      if (isSmartTraining) {
         setWeights((prev) => ({
           ...prev,
           [charId]: Math.max(1, (prev[charId] || 1) - 1),
-        }));
-        setMastery((prev) => ({
-          ...prev,
-          [charId]: (prev[charId] || 0) + 1,
         }));
       }
       setIsCorrect(true);
@@ -502,36 +467,24 @@ export const useMojiganaApp = () => {
       }, 150);
     } else {
       if (isWrong) return;
-      const oldScore = mastery[charId] || 0;
-      const rank = getMedalDisplayInfo(oldScore, isDark);
-      const actualPenalty = Math.min(rank.penalty, oldScore);
       if (!sessionOutcomeCommittedRef.current) {
         sessionOutcomeCommittedRef.current = true;
         setSessionStats((prev) => {
           const charData = { ...prev.charData };
           if (!charData[charId]) {
-            charData[charId] = { correct: 0, wrong: 0, sessionPoints: 0 };
+            charData[charId] = { correct: 0, wrong: 0 };
           }
           charData[charId].wrong += 1;
-          if (isEligibleForMastery) {
-            charData[charId].sessionPoints -= actualPenalty;
-          }
           return {
             ...prev,
             wrong: prev.wrong + 1,
-            pointsChange:
-              prev.pointsChange - (isEligibleForMastery ? actualPenalty : 0),
             charData,
           };
         });
-        if (isEligibleForMastery) {
+        if (isSmartTraining) {
           setWeights((prev) => ({
             ...prev,
             [charId]: Math.min(4, (prev[charId] || 1) + 1),
-          }));
-          setMastery((prev) => ({
-            ...prev,
-            [charId]: Math.max(0, oldScore - actualPenalty),
           }));
         }
       }
@@ -692,13 +645,10 @@ export const useMojiganaApp = () => {
     setManualAnswerConfirm,
     isSettingsOpen,
     setIsSettingsOpen,
-    isMasteryInfoOpen,
-    setIsMasteryInfoOpen,
     infoModal,
     setInfoModal,
     sortConfig,
     setSortConfig,
-    mastery,
     sessionDuration,
     setSessionDuration,
     timeLeft,
@@ -721,7 +671,6 @@ export const useMojiganaApp = () => {
     toggleTheme,
     getId,
     toggleKana,
-    toggleMedalGroup,
     toggleRow,
     toggleCol,
     toggleAllInLayout,

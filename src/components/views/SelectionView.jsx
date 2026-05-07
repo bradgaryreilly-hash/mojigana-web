@@ -7,7 +7,6 @@ import {
   RotateCcw,
   Plus,
   Minus,
-  Info,
 } from 'lucide-react';
 import {
   KANA_DICT,
@@ -17,7 +16,6 @@ import {
   COMBO_GRID,
   NUM_LAYOUT,
 } from '../../data/kanaData';
-import { getMedalDisplayInfo } from '../../lib/medalDisplay';
 
 const SelectionView = ({
   isDark,
@@ -25,17 +23,14 @@ const SelectionView = ({
   setScriptMode,
   selectedIds,
   setSelectedIds,
-  mastery,
   sessionDuration,
   setSessionDuration,
   setCurrentView,
   toggleTheme,
   setIsSettingsOpen,
-  setIsMasteryInfoOpen,
   startQuiz,
   getId,
   toggleKana,
-  toggleMedalGroup,
   toggleRow,
   toggleCol,
   toggleAllInLayout,
@@ -66,7 +61,14 @@ const SelectionView = ({
     const char =
       type === 'numbers' ? item.char : scriptMode === 'katakana' ? item.k : item.h;
     const isMultiGlyphChar = char.length > 1;
-    const info = getMedalDisplayInfo(mastery[id] || 0, isDark);
+    const selectedBg = isDark ? '#0b1220' : '#ecfeff';
+    const unselectedBg = isDark ? '#0f172a' : '#ffffff';
+    const selectedBorder = '#06948E';
+    const unselectedBorder = isDark ? '#334155' : '#e2e8f0';
+    /** Aura: teal (#06948E) — layered spread + blur so glow reads from the rounded border. */
+    const selectedAura = isDark
+      ? '0 0 8px 1px rgba(6, 148, 142, 0.42), 0 0 20px 5px rgba(6, 148, 142, 0.24), 0 0 36px 12px rgba(6, 148, 142, 0.12)'
+      : '0 0 8px 1px rgba(6, 148, 142, 0.35), 0 0 18px 4px rgba(6, 148, 142, 0.18), 0 0 34px 10px rgba(6, 148, 142, 0.08)';
 
     return (
       <button
@@ -74,26 +76,17 @@ const SelectionView = ({
         type="button"
         onClick={() => toggleKana(key)}
         style={{
-          background: isSelected ? info.bg : info.unselectedBg,
-          borderColor: isSelected ? info.border : info.dimColor,
+          background: isSelected ? selectedBg : unselectedBg,
+          borderColor: isSelected ? selectedBorder : unselectedBorder,
           borderWidth: '2px',
-          boxShadow: isSelected ? `0 0 15px ${info.color}44` : 'none',
+          boxShadow: isSelected ? selectedAura : 'none',
           transform: isSelected ? 'scale(1.05)' : 'scale(1)',
           fontSize: 'clamp(0.6rem, min(1.8vw, 2.4vmin), 1.1rem)',
         }}
         className={`aspect-square w-full flex flex-col items-center justify-between rounded-xl transition-all relative p-1 sm:p-1.5 ${
-          isSelected ? 'z-10 shadow-lg' : ''
+          isSelected ? 'z-10' : ''
         }`}
       >
-        {info.icon && (
-          <div className="absolute top-[5%] right-[5%] w-[20%] h-[20%]">
-            <info.icon
-              size="100%"
-              style={{ color: info.color }}
-              fill={info.color}
-            />
-          </div>
-        )}
         <div className="flex-1 flex items-center justify-center w-full min-h-0 overflow-hidden mt-[5%]">
           <span
             style={{
@@ -300,86 +293,6 @@ const SelectionView = ({
                 </div>
               );
             })}
-          </div>
-
-          <div
-            className="grid grid-cols-6 gap-1.5"
-            style={{ fontSize: 'clamp(0.6rem, 1.5vw, 0.95rem)' }}
-          >
-            {['Unranked', 'Bronze', 'Silver', 'Gold', 'Platinum'].map((name) => {
-              const info = getMedalDisplayInfo(
-                name === 'Platinum'
-                  ? 30
-                  : name === 'Gold'
-                    ? 20
-                    : name === 'Silver'
-                      ? 10
-                      : name === 'Bronze'
-                        ? 4
-                        : 0,
-                isDark,
-              );
-              const isActive = selectedIds.some(
-                (id) =>
-                  id.startsWith(scriptMode.charAt(0)) &&
-                  getMedalDisplayInfo(mastery[id] || 0, isDark).name === name,
-              );
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => toggleMedalGroup(name)}
-                  style={{
-                    background: isActive ? info.bg : info.unselectedBg,
-                    borderColor: isActive ? info.border : info.dimColor,
-                    borderWidth: '2px',
-                    boxShadow: isActive ? `0 0 12px ${info.color}44` : 'none',
-                  }}
-                  className={`flex flex-col items-center justify-center py-2.5 rounded-xl transition-all relative ${
-                    isActive ? 'scale-105 shadow-md' : 'scale-100'
-                  }`}
-                >
-                  <div className="w-[1.4em] h-[1.4em] flex items-center justify-center">
-                    {info.icon ? (
-                      <info.icon
-                        size="100%"
-                        fill={info.color}
-                        style={{ color: info.color }}
-                      />
-                    ) : (
-                      <div className="w-[80%] h-[80%] border border-dashed rounded-full border-slate-400" />
-                    )}
-                  </div>
-                  <span
-                    className={`text-[0.75em] mt-[10%] font-black uppercase tracking-tighter ${
-                      isActive
-                        ? isDark
-                          ? 'text-white'
-                          : 'text-slate-900'
-                        : 'text-slate-500'
-                    }`}
-                  >
-                    {name}
-                  </span>
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() => setIsMasteryInfoOpen(true)}
-              className={`flex flex-col items-center justify-center py-2.5 rounded-xl border-2 transition-all active:scale-95 ${
-                isDark
-                  ? 'bg-slate-800 border-slate-700 text-[#06948E]'
-                  : 'bg-slate-50 border-slate-100 text-[#06948E]'
-              }`}
-            >
-              <div className="w-[1.4em] h-[1.4em] flex items-center justify-center">
-                <Info size="100%" />
-              </div>
-              <span className="text-[0.75em] mt-[10%] font-black uppercase tracking-tighter">
-                Guide
-              </span>
-            </button>
           </div>
 
           <div
