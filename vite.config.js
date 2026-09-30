@@ -11,7 +11,11 @@ function productionGhPagesHtml() {
   return {
     name: 'production-gh-pages-html',
     transformIndexHtml(html) {
-      let h = html.replace(/\s+crossorigin(?:="[^"]*"|)/g, '')
+      let h = html.replace(/<script\b([^>]*)>/gi, (tag, attrs) => {
+        if (/googlesyndication\.com/i.test(attrs)) return tag
+        return `<script${attrs.replace(/\s+crossorigin(?:="[^"]*")?/g, '')}>`
+      })
+      h = h.replace(/(<link\b[^>]*)\s+crossorigin(?:="[^"]*")?/gi, '$1')
       const re =
         /<script([^>]*type="module"[^>]*)src="([^"]+)"([^>]*)>\s*<\/script>/
       const m = h.match(re)

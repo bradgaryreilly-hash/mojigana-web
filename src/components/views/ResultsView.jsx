@@ -1,4 +1,5 @@
 import { TrendingUp, TrendingDown, ArrowUpDown } from 'lucide-react';
+import AdBanner from '../site/AdBanner';
 
 /** Hit/miss counts must be plain non-negative integers (ignores booleans, strings, floats). */
 const sessionCount = (v) => {
@@ -132,11 +133,11 @@ const ResultsView = ({
 
   return (
     <div
-      className={`flex flex-col h-full overflow-y-scroll ${
+      className={`flex min-h-0 w-full flex-1 flex-col overflow-hidden ${
         isDark ? 'bg-slate-900' : 'bg-white'
       }`}
     >
-      <header className="px-4 h-14 border-b flex items-center justify-center sticky top-0 bg-inherit z-10">
+      <header className="flex h-14 shrink-0 items-center justify-center border-b px-4">
         <h2
           className={`text-lg font-bold uppercase tracking-widest ${
             isDark ? 'text-slate-100' : 'text-slate-800'
@@ -145,19 +146,7 @@ const ResultsView = ({
           Session Stats
         </h2>
       </header>
-      <p
-        className={`px-5 text-center text-[10px] leading-snug ${
-          isDark ? 'text-slate-500' : 'text-slate-400'
-        }`}
-      >
-        Session means this quiz run only—from Start Quiz until you leave the quiz or
-        this screen. It is not saved when you exit. Each card counts once: your first
-        graded answer on that card is its hit or miss; fixing a wrong answer still
-        leaves a miss and does not add a hit. Details and strongest/weakest use only
-        characters you answered at least once (e.g. unseen cards in a short run are
-        omitted).
-      </p>
-      <div className="flex-1 p-5 space-y-5">
+      <div className="shrink-0 space-y-3 px-5 pt-4">
         <div className="flex items-center justify-between gap-6 px-4">
           <div className="relative w-24 h-24 flex items-center justify-center">
             <svg className="w-full h-full -rotate-90">
@@ -250,15 +239,15 @@ const ResultsView = ({
           >
             {showStrongestCard && (
               <div
-                className={`p-3 rounded-[2rem] border flex flex-col items-center ${
+                className={`flex flex-col items-center rounded-[2rem] border p-2 ${
                   isDark
                     ? 'bg-emerald-500/5 border-emerald-500/20'
                     : 'bg-emerald-50 border-emerald-100'
                 }`}
               >
-                <TrendingUp size={14} className="text-[#06948E] mb-1" />
+                <TrendingUp size={14} className="mb-0.5 text-[#06948E]" />
                 <span
-                  className={`text-2xl font-bold whitespace-nowrap break-keep ${
+                  className={`whitespace-nowrap break-keep text-xl font-bold ${
                     isDark ? 'text-white' : 'text-slate-900'
                   }`}
                   style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
@@ -272,7 +261,7 @@ const ResultsView = ({
             )}
             {showNeedsFocusSlot && (
               <div
-                className={`p-3 rounded-[2.5rem] border flex flex-col items-center ${
+                className={`flex flex-col items-center rounded-[2rem] border p-2 ${
                   isDark
                     ? 'bg-rose-500/5 border-rose-500/20'
                     : 'bg-rose-50 border-rose-100'
@@ -283,9 +272,9 @@ const ResultsView = ({
                     : undefined
                 }
               >
-                <TrendingDown size={14} className="text-rose-500 mb-1" />
+                <TrendingDown size={14} className="mb-0.5 text-rose-500" />
                 <span
-                  className={`flex min-h-[2.25rem] w-full items-center justify-center text-2xl font-bold whitespace-nowrap break-keep ${
+                  className={`flex min-h-[1.75rem] w-full items-center justify-center whitespace-nowrap break-keep text-xl font-bold ${
                     showFilledWeakest
                       ? isDark
                         ? 'text-white'
@@ -304,8 +293,30 @@ const ResultsView = ({
           </div>
         )}
 
-        <div className="space-y-2">
-          <div className="flex items-center gap-4 px-4">
+        <AdBanner slot="5332946596" />
+      </div>
+      <div className="shrink-0 px-5 pb-3 pt-3">
+        <button
+          type="button"
+          onClick={() => {
+            setCurrentView('selection');
+            setSortConfig({ key: 'none', direction: 'desc' });
+          }}
+          className={`w-full rounded-2xl py-3.5 text-lg font-black shadow-xl ${
+            isDark
+              ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 shadow-emerald-500/20'
+              : 'bg-gradient-to-r from-cyan-600 to-emerald-600 text-white shadow-cyan-600/30'
+          }`}
+        >
+          Done
+        </button>
+      </div>
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-5 pb-5">
+          <div
+            className={`sticky top-0 z-10 flex items-center gap-4 px-4 py-1 ${
+              isDark ? 'bg-slate-900' : 'bg-white'
+            }`}
+          >
             <div className="flex min-w-0 max-w-[55%] flex-1">
               <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
                 Details
@@ -384,23 +395,6 @@ const ResultsView = ({
               })
             )}
           </div>
-        </div>
-      </div>
-      <div className="p-5 sticky bottom-0 bg-inherit border-t border-transparent">
-        <button
-          type="button"
-          onClick={() => {
-            setCurrentView('selection');
-            setSortConfig({ key: 'none', direction: 'desc' });
-          }}
-          className={`w-full py-4 rounded-2xl font-black text-lg shadow-xl ${
-            isDark
-              ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-900 shadow-emerald-500/20'
-              : 'bg-gradient-to-r from-cyan-600 to-emerald-600 text-white shadow-cyan-600/30'
-          }`}
-        >
-          Done
-        </button>
       </div>
     </div>
   );

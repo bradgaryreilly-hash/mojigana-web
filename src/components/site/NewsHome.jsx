@@ -1,5 +1,6 @@
 import { Play } from 'lucide-react';
 import { NEWS_POSTS } from '../../data/news';
+import AdBanner from './AdBanner';
 
 const NewsHome = ({ isDark }) => (
   <div className="px-5 sm:px-8 pb-16">
@@ -35,6 +36,7 @@ const NewsHome = ({ isDark }) => (
       >
         <Play size={22} fill="currentColor" /> Start Learning
       </a>
+      <AdBanner className="mt-8" />
     </div>
 
     <section aria-labelledby="news-heading">

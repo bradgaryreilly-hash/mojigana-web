@@ -16,7 +16,7 @@ const App = () => {
   return (
     <div className="min-h-screen w-full bg-slate-900 flex justify-center selection:bg-emerald-100">
       <div
-        className={`w-full max-w-xl min-h-[100dvh] h-[100dvh] relative shadow-2xl overflow-hidden flex flex-col transition-colors duration-300 box-border pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] ${shellBg}`}
+        className={`relative box-border flex h-[100dvh] max-h-[100dvh] min-h-0 w-full max-w-xl flex-col overflow-hidden pt-[env(safe-area-inset-top,0px)] pr-[env(safe-area-inset-right,0px)] pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] shadow-2xl transition-colors duration-300 ${shellBg}`}
       >
         {app.currentView === 'selection' && (
           <SelectionView

@@ -11,7 +11,9 @@ const RichText = ({ text, isDark }) => {
   for (const match of text.matchAll(TOKEN)) {
     const index = match.index ?? 0;
     if (index > last) nodes.push(text.slice(last, index));
-    const token = match[0];
+    const raw = match[0];
+    const token = raw.replace(/[.,;:)]+$/, '') || raw;
+    const trailing = raw.slice(token.length);
     const isEmail = token.includes('@') && !token.startsWith('http');
     nodes.push(
       <a
@@ -25,7 +27,8 @@ const RichText = ({ text, isDark }) => {
         {token}
       </a>,
     );
-    last = index + token.length;
+    if (trailing) nodes.push(trailing);
+    last = index + raw.length;
   }
   if (last < text.length) nodes.push(text.slice(last));
   return nodes;

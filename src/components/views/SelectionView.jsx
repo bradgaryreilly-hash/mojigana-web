@@ -206,7 +206,7 @@ const SelectionView = ({
 
   return (
     <div
-      className={`flex flex-col h-full relative ${
+      className={`relative flex min-h-0 w-full flex-1 flex-col ${
         isDark ? 'bg-slate-900' : 'bg-slate-50'
       }`}
     >

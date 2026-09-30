@@ -5,11 +5,12 @@
  */
 export const NEWS_POSTS = [
   {
-    date: 'September 29, 2026',
-    title: 'A home for MojiGana updates',
+    date: 'September 30, 2026',
+    title: 'Flashcards updated',
     paragraphs: [
-      'This page is where news about MojiGana will show up. The flashcard app is still one tap away.',
-      'The privacy policy, about page, and contact page now have their own addresses, so you can open them directly or share a link.',
+      'The MojiGana flashcard app has been updated. Practice hiragana, katakana, and numbers, then review how the session went.',
+      'We are developing the website further, and more of the study experience will arrive here as that work continues.',
+      'News about a new project will be posted shortly.',
     ],
   },
 ];
