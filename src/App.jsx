@@ -1,10 +1,8 @@
 import { useMojiganaApp } from './hooks/useMojiganaApp';
-import HomeView from './components/views/HomeView';
 import SelectionView from './components/views/SelectionView';
 import QuizView from './components/views/QuizView';
 import ResultsView from './components/views/ResultsView';
 import SettingsModal from './components/modals/SettingsModal';
-import InfoPagesModal from './components/modals/InfoPagesModal';
 
 /**
  * MojiGana - Version 7.7.3
@@ -13,31 +11,13 @@ import InfoPagesModal from './components/modals/InfoPagesModal';
 const App = () => {
   const app = useMojiganaApp();
 
-  // Must match HomeView gradients: safe-area padding paints the shell background,
-  // so on Home a plain white shell showed as a bar above the transparent header.
-  const shellBg =
-    app.currentView === 'home'
-      ? app.isDark
-        ? 'bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40'
-        : 'bg-gradient-to-br from-cyan-50 via-white to-emerald-50'
-      : app.isDark
-        ? 'bg-slate-900'
-        : 'bg-white';
+  const shellBg = app.isDark ? 'bg-slate-900' : 'bg-white';
 
   return (
     <div className="min-h-screen w-full bg-slate-900 flex justify-center selection:bg-emerald-100">
       <div
         className={`w-full max-w-xl min-h-[100dvh] h-[100dvh] relative shadow-2xl overflow-hidden flex flex-col transition-colors duration-300 box-border pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] ${shellBg}`}
       >
-        {app.currentView === 'home' && (
-          <HomeView
-            isDark={app.isDark}
-            toggleTheme={app.toggleTheme}
-            setIsSettingsOpen={app.setIsSettingsOpen}
-            setCurrentView={app.setCurrentView}
-            setInfoModal={app.setInfoModal}
-          />
-        )}
         {app.currentView === 'selection' && (
           <SelectionView
             isDark={app.isDark}
@@ -47,7 +27,6 @@ const App = () => {
             setSelectedIds={app.setSelectedIds}
             sessionDuration={app.sessionDuration}
             setSessionDuration={app.setSessionDuration}
-            setCurrentView={app.setCurrentView}
             toggleTheme={app.toggleTheme}
             setIsSettingsOpen={app.setIsSettingsOpen}
             startQuiz={app.startQuiz}
@@ -66,7 +45,7 @@ const App = () => {
             timeLeft={app.timeLeft}
             isPaused={app.isPaused}
             setIsPaused={app.setIsPaused}
-            setCurrentView={app.setCurrentView}
+            goToResults={app.goToResults}
             toggleTheme={app.toggleTheme}
             setIsSettingsOpen={app.setIsSettingsOpen}
             showPrev={app.showPrev}
@@ -79,6 +58,7 @@ const App = () => {
             showingAnswer={app.showingAnswer}
             setShowingAnswer={app.setShowingAnswer}
             isMultipleChoice={app.isMultipleChoice}
+            mcRomajiPrompt={app.mcRomajiPrompt}
             quizOptions={app.quizOptions}
             handleInputChange={app.handleInputChange}
             handleQuizInputKeyDown={app.handleQuizInputKeyDown}
@@ -107,6 +87,10 @@ const App = () => {
           setIsSettingsOpen={app.setIsSettingsOpen}
           isMultipleChoice={app.isMultipleChoice}
           setIsMultipleChoice={app.setIsMultipleChoice}
+          multipleChoiceCount={app.multipleChoiceCount}
+          setMultipleChoiceCount={app.setMultipleChoiceCount}
+          mcRomajiPrompt={app.mcRomajiPrompt}
+          setMcRomajiPrompt={app.setMcRomajiPrompt}
           isSmartTraining={app.isSmartTraining}
           setIsSmartTraining={app.setIsSmartTraining}
           showPrev={app.showPrev}
@@ -115,12 +99,6 @@ const App = () => {
           setShowNext={app.setShowNext}
           manualAnswerConfirm={app.manualAnswerConfirm}
           setManualAnswerConfirm={app.setManualAnswerConfirm}
-          setInfoModal={app.setInfoModal}
-        />
-        <InfoPagesModal
-          isDark={app.isDark}
-          infoModal={app.infoModal}
-          setInfoModal={app.setInfoModal}
         />
       </div>
     </div>

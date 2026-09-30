@@ -23,19 +23,39 @@ export const sanitizeQueue = (queue) => {
   return q;
 };
 
+const CHOICE_COUNTS = [3, 4, 5, 6];
+
+/** Total answers shown, including the correct one. */
+export const normalizeChoiceCount = (count) =>
+  CHOICE_COUNTS.includes(count) ? count : 3;
+
 /**
- * Picks two wrong answers alongside the correct romaji.
+ * Picks wrong answers alongside the correct romaji.
  * Uses combo vs basic pool separation and confusion-map hints when available.
  */
-export const generateChoices = (item) => {
+export const generateChoices = (item, choiceCount = 3) => {
   if (!item) return [];
+  const distractorCount = normalizeChoiceCount(choiceCount) - 1;
+
+  const pickDistractors = (candidates, preferred = []) => {
+    const unique = [...new Set(candidates.filter((c) => c && c !== item.romaji))];
+    const picked = [];
+    const take = (list) => {
+      const shuffled = [...list].sort(() => Math.random() - 0.5);
+      for (const candidate of shuffled) {
+        if (picked.length >= distractorCount) break;
+        if (!picked.includes(candidate)) picked.push(candidate);
+      }
+    };
+    take(preferred.filter((c) => unique.includes(c)));
+    take(unique);
+    return picked;
+  };
 
   if (item.type === 'numbers') {
-    const candidates = Object.keys(NUM_DICT)
-      .map((k) => NUM_DICT[k].romaji)
-      .filter((c) => c !== item.romaji);
-    const chosen = candidates.sort(() => 0.5 - Math.random()).slice(0, 2);
-    return [item.romaji, ...chosen].sort(() => 0.5 - Math.random());
+    const candidates = Object.keys(NUM_DICT).map((k) => NUM_DICT[k].romaji);
+    const chosen = pickDistractors(candidates);
+    return [item.romaji, ...chosen].sort(() => Math.random() - 0.5);
   }
 
   const comboKeys = COMBO_GRID.flat().filter((k) => k !== null);
@@ -44,28 +64,25 @@ export const generateChoices = (item) => {
   );
   const isComboItem = comboKeys.includes(item.romaji);
   const activePool = isComboItem ? comboKeys : basicKeys;
-  const candidates = activePool.filter((c) => c !== item.romaji);
-
-  let d1;
-  let d2;
-
-  const smartDistractors = (CONFUSION_MAP[item.romaji] || []).filter((c) =>
-    candidates.includes(c),
+  const chosen = pickDistractors(
+    activePool,
+    CONFUSION_MAP[item.romaji] || [],
   );
+  return [item.romaji, ...chosen].sort(() => Math.random() - 0.5);
+};
 
-  if (smartDistractors.length >= 2) {
-    const shuffled = smartDistractors.sort(() => 0.5 - Math.random());
-    d1 = shuffled[0];
-    d2 = shuffled[1];
-  } else if (smartDistractors.length === 1) {
-    d1 = smartDistractors[0];
-    const remaining = candidates.filter((c) => c !== d1);
-    d2 = remaining[Math.floor(Math.random() * remaining.length)];
-  } else {
-    const shuffled = candidates.sort(() => 0.5 - Math.random());
-    d1 = shuffled[0];
-    d2 = shuffled[1];
+/**
+ * Kana (or number glyph) for a romaji answer, in the same script as the prompt.
+ * Choice lists stay romaji so grading does not change.
+ */
+export const glyphForRomaji = (romaji, item) => {
+  if (!item) return romaji;
+  if (romaji === item.romaji) return item.char;
+  if (item.type === 'numbers') {
+    const match = Object.values(NUM_DICT).find((entry) => entry.romaji === romaji);
+    return match?.char ?? romaji;
   }
-
-  return [item.romaji, d1, d2].sort(() => 0.5 - Math.random());
+  const entry = KANA_DICT[romaji];
+  if (!entry) return romaji;
+  return item.type === 'katakana' ? entry.k : entry.h;
 };

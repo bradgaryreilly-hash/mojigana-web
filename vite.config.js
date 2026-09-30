@@ -63,29 +63,41 @@ function inlineIifeBundle() {
       const re =
         /<script(?:\s+defer)?\s+src="([^"]+\/assets\/[^"]+\.js)"\s*>\s*<\/script>/i
       const m = html.match(re)
-      if (!m) return
-      const webPath = m[1]
-      let rel = webPath.startsWith(base) ? webPath.slice(base.length) : webPath
-      rel = rel.replace(/^\//, '')
-      const jsPath = path.join(outDir, rel)
-      let js
-      try {
-        js = await fs.readFile(jsPath, 'utf-8')
-      } catch {
-        return
+      if (m) {
+        const webPath = m[1]
+        let rel = webPath.startsWith(base) ? webPath.slice(base.length) : webPath
+        rel = rel.replace(/^\//, '')
+        const jsPath = path.join(outDir, rel)
+        try {
+          const js = await fs.readFile(jsPath, 'utf-8')
+          const safe = js.replace(/<\/script/gi, '<\\/script')
+          // Replacement must be a function: minified JS contains `$&`, `$1`, etc.; a string
+          // replacement would interpret `$` and corrupt the bundle (and inject </script>).
+          html = html.replace(re, () => `<script>${safe}</script>`)
+          await fs.unlink(jsPath)
+        } catch {
+          /* keep the external script tag if the bundle file is missing */
+        }
       }
-      const safe = js.replace(/<\/script/gi, '<\\/script')
-      // Replacement must be a function: minified JS contains `$&`, `$1`, etc.; a string
-      // replacement would interpret `$` and corrupt the bundle (and inject </script>).
-      html = html.replace(re, () => `<script>${safe}</script>`)
       await fs.writeFile(htmlPath, html, 'utf-8')
-      try {
-        await fs.unlink(jsPath)
-      } catch {
-        /* ignore */
-      }
+      await copyRouteHtml(outDir, html)
     },
   }
+}
+
+/**
+ * GitHub Pages has no SPA fallback. Copy the built index to each real route
+ * (and 404.html) so mojigana.com/privacy and the other pages load directly.
+ * Keep folder names in sync with STATIC_ROUTE_DIRS in src/lib/sitePaths.js.
+ */
+async function copyRouteHtml(outDir, html) {
+  const routes = ['flashcards', 'about', 'contact', 'privacy']
+  for (const route of routes) {
+    const dir = path.join(outDir, route)
+    await fs.mkdir(dir, { recursive: true })
+    await fs.writeFile(path.join(dir, 'index.html'), html, 'utf-8')
+  }
+  await fs.writeFile(path.join(outDir, '404.html'), html, 'utf-8')
 }
 
 // https://vite.dev/config/

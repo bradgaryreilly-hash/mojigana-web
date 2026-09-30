@@ -1,7 +1,7 @@
 import './index.css'
 import { StrictMode, Component } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App.jsx'
+import Root from './Root.jsx'
 
 class RootErrorBoundary extends Component {
   constructor(props) {
@@ -54,7 +54,7 @@ try {
   root.render(
     <StrictMode>
       <RootErrorBoundary>
-        <App />
+        <Root />
       </RootErrorBoundary>
     </StrictMode>,
   )

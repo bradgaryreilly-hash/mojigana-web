@@ -10,7 +10,11 @@ import {
   KANA_DICT,
   NUM_DICT,
 } from '../data/kanaData';
-import { sanitizeQueue, generateChoices } from '../logic/quizFunctions';
+import {
+  sanitizeQueue,
+  generateChoices,
+  normalizeChoiceCount,
+} from '../logic/quizFunctions';
 import {
   loadPersistedState,
   schedulePersist,
@@ -54,7 +58,7 @@ function isEnterConfirmKeyEvent(e) {
 export const useMojiganaApp = () => {
   const persisted = useMemo(() => loadPersistedState(), []);
 
-  const [currentView, setCurrentView] = useState('home');
+  const [currentView, setCurrentView] = useState('selection');
   const [scriptMode, setScriptMode] = useState(
     () => persisted?.scriptMode ?? 'hiragana',
   );
@@ -67,13 +71,18 @@ export const useMojiganaApp = () => {
   const [isMultipleChoice, setIsMultipleChoice] = useState(
     () => persisted?.isMultipleChoice ?? false,
   );
+  const [multipleChoiceCount, setMultipleChoiceCountState] = useState(() =>
+    normalizeChoiceCount(persisted?.multipleChoiceCount),
+  );
+  const [mcRomajiPrompt, setMcRomajiPrompt] = useState(
+    () => persisted?.mcRomajiPrompt ?? false,
+  );
   const [showPrev, setShowPrev] = useState(() => persisted?.showPrev ?? false);
   const [showNext, setShowNext] = useState(() => persisted?.showNext ?? false);
   const [manualAnswerConfirm, setManualAnswerConfirm] = useState(
     () => persisted?.manualAnswerConfirm ?? false,
   );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [infoModal, setInfoModal] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'none', direction: 'desc' });
   const [weights, setWeights] = useState(() => persisted?.weights ?? {});
   const [quizQueue, setQuizQueue] = useState([]);
@@ -107,6 +116,8 @@ export const useMojiganaApp = () => {
   const timerRef = useRef(null);
   const persistSnapshotRef = useRef(null);
   const currentViewRef = useRef(currentView);
+  /** Same-URL history entry so browser Back during a quiz lands on results first. */
+  const quizHistoryPushedRef = useRef(false);
   const prevViewRef = useRef(null);
   const isDark = theme === 'dark';
   const currentQuizItem = quizQueue[0] || null;
@@ -212,6 +223,8 @@ export const useMojiganaApp = () => {
       selectedIds,
       isSmartTraining,
       isMultipleChoice,
+      multipleChoiceCount,
+      mcRomajiPrompt,
       showPrev,
       showNext,
       manualAnswerConfirm,
@@ -229,6 +242,8 @@ export const useMojiganaApp = () => {
     selectedIds,
     isSmartTraining,
     isMultipleChoice,
+    multipleChoiceCount,
+    mcRomajiPrompt,
     showPrev,
     showNext,
     manualAnswerConfirm,
@@ -252,13 +267,33 @@ export const useMojiganaApp = () => {
     };
   }, []);
 
+  const goToResults = useCallback(() => {
+    setIsSettingsOpen(false);
+    setCurrentView('results');
+    if (quizHistoryPushedRef.current) {
+      quizHistoryPushedRef.current = false;
+      window.history.back();
+    }
+  }, []);
+
+  useEffect(() => {
+    const onPopState = () => {
+      if (currentViewRef.current !== 'quiz') return;
+      quizHistoryPushedRef.current = false;
+      setIsSettingsOpen(false);
+      setCurrentView('results');
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
   useEffect(() => {
     if (currentView === 'quiz' && sessionDuration > 0 && !isPaused) {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(timerRef.current);
-            setCurrentView('results');
+            queueMicrotask(() => goToResults());
             return 0;
           }
           return prev - 1;
@@ -268,7 +303,7 @@ export const useMojiganaApp = () => {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [currentView, sessionDuration, isPaused]);
+  }, [currentView, sessionDuration, isPaused, goToResults]);
 
   const toggleTheme = () =>
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
@@ -381,6 +416,10 @@ export const useMojiganaApp = () => {
     setTimeLeft(sessionDuration * 60);
     setIsPaused(false);
     setCurrentView('quiz');
+    if (!quizHistoryPushedRef.current) {
+      window.history.pushState({ mojiganaQuiz: true }, '');
+      quizHistoryPushedRef.current = true;
+    }
     const initialBatch = generateBatch(weights);
     let queue =
       initialBatch.length < 5
@@ -388,7 +427,7 @@ export const useMojiganaApp = () => {
         : initialBatch;
     const finalQueue = sanitizeQueue(queue);
     setQuizQueue(finalQueue);
-    setQuizOptions(generateChoices(finalQueue[0]));
+    setQuizOptions(generateChoices(finalQueue[0], multipleChoiceCount));
     setPrevQuizItem(null);
     setInputValue('');
   };
@@ -404,7 +443,7 @@ export const useMojiganaApp = () => {
         newQ.push(...generateBatch(weights));
       }
       const sanitized = sanitizeQueue(newQ);
-      setQuizOptions(generateChoices(sanitized[0]));
+      setQuizOptions(generateChoices(sanitized[0], multipleChoiceCount));
       return sanitized;
     });
     setInputValue('');
@@ -637,6 +676,15 @@ export const useMojiganaApp = () => {
     setIsSmartTraining,
     isMultipleChoice,
     setIsMultipleChoice,
+    multipleChoiceCount,
+    mcRomajiPrompt,
+    setMcRomajiPrompt,
+    setMultipleChoiceCount: (count) => {
+      const next = normalizeChoiceCount(count);
+      setMultipleChoiceCountState(next);
+      const item = quizQueue[0];
+      if (item) setQuizOptions(generateChoices(item, next));
+    },
     showPrev,
     setShowPrev,
     showNext,
@@ -645,8 +693,6 @@ export const useMojiganaApp = () => {
     setManualAnswerConfirm,
     isSettingsOpen,
     setIsSettingsOpen,
-    infoModal,
-    setInfoModal,
     sortConfig,
     setSortConfig,
     sessionDuration,
@@ -676,6 +722,7 @@ export const useMojiganaApp = () => {
     toggleAllInLayout,
     getPool,
     startQuiz,
+    goToResults,
     handleInputChange,
     handleQuizInputKeyDown,
     handleQuizInputKeyUp,

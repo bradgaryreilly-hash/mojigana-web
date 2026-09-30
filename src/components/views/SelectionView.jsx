@@ -25,7 +25,6 @@ const SelectionView = ({
   setSelectedIds,
   sessionDuration,
   setSessionDuration,
-  setCurrentView,
   toggleTheme,
   setIsSettingsOpen,
   startQuiz,
@@ -216,13 +215,13 @@ const SelectionView = ({
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'
         }`}
       >
-        <button
-          type="button"
-          onClick={() => setCurrentView('home')}
+        <a
+          href="/"
+          aria-label="Back to home"
           className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-400 transition-all active:scale-95"
         >
           <ChevronLeft size={24} strokeWidth={2.25} />
-        </button>
+        </a>
         <h2
           className={`text-lg font-bold tracking-tight absolute left-1/2 -translate-x-1/2 ${
             isDark ? 'text-slate-100' : 'text-slate-800'

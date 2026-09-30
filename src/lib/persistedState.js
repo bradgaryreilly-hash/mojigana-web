@@ -65,6 +65,11 @@ export function loadPersistedState() {
         typeof data.isMultipleChoice === 'boolean'
           ? data.isMultipleChoice
           : false,
+      multipleChoiceCount: [3, 4, 5, 6].includes(data.multipleChoiceCount)
+        ? data.multipleChoiceCount
+        : 3,
+      mcRomajiPrompt:
+        typeof data.mcRomajiPrompt === 'boolean' ? data.mcRomajiPrompt : false,
       showPrev:
         typeof data.showPrev === 'boolean' ? data.showPrev : false,
       showNext:
@@ -89,6 +94,8 @@ function buildPayload(slice) {
     selectedIds: slice.selectedIds,
     isSmartTraining: slice.isSmartTraining,
     isMultipleChoice: slice.isMultipleChoice,
+    multipleChoiceCount: slice.multipleChoiceCount,
+    mcRomajiPrompt: slice.mcRomajiPrompt,
     showPrev: slice.showPrev,
     showNext: slice.showNext,
     manualAnswerConfirm: slice.manualAnswerConfirm,
@@ -114,6 +121,27 @@ export function schedulePersist(slice) {
     persistTimer = null;
     savePersistedState(slice);
   }, 400);
+}
+
+/** Save a theme change without dropping the rest of the stored app data. */
+export function persistTheme(theme) {
+  const current = loadPersistedState();
+  savePersistedState({
+    theme,
+    scriptMode: current?.scriptMode ?? 'hiragana',
+    selectedIds: current?.selectedIds ?? [],
+    isSmartTraining: current?.isSmartTraining ?? true,
+    isMultipleChoice: current?.isMultipleChoice ?? false,
+    multipleChoiceCount: [3, 4, 5, 6].includes(current?.multipleChoiceCount)
+      ? current.multipleChoiceCount
+      : 3,
+    mcRomajiPrompt: current?.mcRomajiPrompt ?? false,
+    showPrev: current?.showPrev ?? false,
+    showNext: current?.showNext ?? false,
+    manualAnswerConfirm: current?.manualAnswerConfirm ?? false,
+    sessionDuration: current?.sessionDuration ?? 0,
+    weights: current?.weights ?? {},
+  });
 }
 
 /** Immediate save (tab background / unload). */

@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
+import { glyphForRomaji } from '../../logic/quizFunctions';
 import {
   Play,
   ChevronLeft,
@@ -18,7 +19,7 @@ const QuizView = ({
   timeLeft,
   isPaused,
   setIsPaused,
-  setCurrentView,
+  goToResults,
   toggleTheme,
   setIsSettingsOpen,
   showPrev,
@@ -31,6 +32,7 @@ const QuizView = ({
   showingAnswer,
   setShowingAnswer,
   isMultipleChoice,
+  mcRomajiPrompt,
   quizOptions,
   handleInputChange,
   handleQuizInputKeyDown,
@@ -44,6 +46,9 @@ const QuizView = ({
 }) => {
   const scrollAreaRef = useRef(null);
   const timerText = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
+  const romajiPrompt = isMultipleChoice && mcRomajiPrompt;
+  const promptOf = (item) => (romajiPrompt ? item.romaji : item.char);
+  const revealOf = (item) => (romajiPrompt ? item.char : item.romaji);
 
   useLayoutEffect(() => {
     let alive = true;
@@ -104,7 +109,8 @@ const QuizView = ({
       >
         <button
           type="button"
-          onClick={() => setCurrentView('selection')}
+          aria-label="Back"
+          onClick={goToResults}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-400 transition-all active:scale-95"
         >
           <ChevronLeft size={24} strokeWidth={2.25} />
@@ -260,10 +266,18 @@ const QuizView = ({
                       className={`max-w-full text-center leading-none select-none font-bold whitespace-nowrap ${
                         isDark ? 'text-slate-100' : 'text-slate-950'
                       } ${
-                        currentQuizItem?.char.length > 1 ? 'text-[3.35em]' : 'text-[5em]'
+                        romajiPrompt
+                          ? (currentQuizItem?.romaji.length ?? 0) > 4
+                            ? 'text-[2.15em] uppercase'
+                            : (currentQuizItem?.romaji.length ?? 0) > 2
+                              ? 'text-[2.8em] uppercase'
+                              : 'text-[3.6em] uppercase'
+                          : currentQuizItem?.char.length > 1
+                            ? 'text-[3.35em]'
+                            : 'text-[5em]'
                       }`}
                     >
-                      {currentQuizItem?.char}
+                      {currentQuizItem ? promptOf(currentQuizItem) : ''}
                     </span>
                   </div>
                   {showingAnswer ? (
@@ -272,11 +286,18 @@ const QuizView = ({
                       aria-live="polite"
                     >
                       <span
-                        className={`line-clamp-3 text-center text-base font-black uppercase leading-tight tracking-wide sm:text-lg ${
-                          isDark ? 'text-slate-100' : 'text-slate-800'
-                        }`}
+                        style={
+                          romajiPrompt
+                            ? { fontFamily: "'Sawarabi Gothic', sans-serif" }
+                            : undefined
+                        }
+                        className={`line-clamp-3 text-center font-black leading-tight ${
+                          romajiPrompt
+                            ? 'text-4xl sm:text-5xl'
+                            : 'text-base uppercase tracking-wide sm:text-lg'
+                        } ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
                       >
-                        {currentQuizItem?.romaji}
+                        {currentQuizItem ? revealOf(currentQuizItem) : ''}
                       </span>
                     </div>
                   ) : null}
@@ -330,10 +351,16 @@ const QuizView = ({
                       wordBreak: 'keep-all',
                     }}
                     className={`whitespace-nowrap ${
-                      nextQuizItem.char.length > 1 ? 'text-4xl' : 'text-6xl'
+                      romajiPrompt
+                        ? promptOf(nextQuizItem).length > 2
+                          ? 'text-2xl uppercase'
+                          : 'text-4xl uppercase'
+                        : nextQuizItem.char.length > 1
+                          ? 'text-4xl'
+                          : 'text-6xl'
                     } font-bold ${isDark ? 'text-white/30' : 'text-slate-900/30'}`}
                   >
-                    {nextQuizItem.char}
+                    {promptOf(nextQuizItem)}
                   </span>
                 )}
               </div>
@@ -341,7 +368,7 @@ const QuizView = ({
             <div className="flex-1 min-h-0 w-full flex items-center justify-center px-0.5 py-1.5">
               <button
                 type="button"
-                onClick={() => setCurrentView('results')}
+                onClick={goToResults}
                 className={`flex flex-col items-center justify-center box-border
                   w-[min(100%,5.25rem)] h-[min(100%,6rem)] min-h-[3rem] max-h-[70%]
                   rounded-xl border-2 text-xs font-black uppercase tracking-wide transition-all active:scale-[0.97] text-[#06948E] ${
@@ -357,11 +384,23 @@ const QuizView = ({
         </div>
         <div className="w-full max-w-md mx-auto flex flex-col gap-3 sm:gap-4">
           {isMultipleChoice ? (
-            <div className="grid grid-cols-3 gap-2">
-              {quizOptions.map((opt) => (
+            <div
+              className={
+                quizOptions.length === 4
+                  ? 'grid grid-cols-2 gap-2'
+                  : 'grid grid-cols-6 gap-2'
+              }
+            >
+              {quizOptions.map((opt, index) => (
                 <div
                   key={opt}
-                  className={`p-[2.5px] rounded-[20px] sm:rounded-[24px] shadow-lg transition-all duration-300 ${
+                  className={`${
+                    quizOptions.length === 4
+                      ? ''
+                      : quizOptions.length === 5 && index === 3
+                        ? 'col-span-2 col-start-2'
+                        : 'col-span-2'
+                  } p-[2.5px] rounded-[20px] sm:rounded-[24px] shadow-lg transition-all duration-300 ${
                     isPaused
                       ? 'bg-slate-500'
                       : isDark
@@ -375,7 +414,14 @@ const QuizView = ({
                     onClick={() =>
                       handleInputChange({ target: { value: opt } })
                     }
-                    className={`w-full py-3 sm:py-4 rounded-[17px] sm:rounded-[21px] font-black text-base sm:text-lg transition-all active:scale-95 ${
+                    style={
+                      romajiPrompt
+                        ? { fontFamily: "'Sawarabi Gothic', sans-serif" }
+                        : undefined
+                    }
+                    className={`w-full py-3 sm:py-4 rounded-[17px] sm:rounded-[21px] font-black transition-all active:scale-95 ${
+                      romajiPrompt ? 'text-2xl sm:text-3xl' : 'text-base sm:text-lg'
+                    } ${
                       isPaused
                         ? 'bg-slate-900 text-slate-500'
                         : isDark
@@ -383,7 +429,9 @@ const QuizView = ({
                           : 'bg-white text-[#0f172a]'
                     }`}
                   >
-                    {opt.toUpperCase()}
+                    {romajiPrompt
+                      ? glyphForRomaji(opt, currentQuizItem)
+                      : opt.toUpperCase()}
                   </button>
                 </div>
               ))}
