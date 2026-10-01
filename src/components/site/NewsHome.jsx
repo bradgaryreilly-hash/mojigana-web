@@ -5,30 +5,12 @@ import AdBanner from './AdBanner';
 const NewsHome = ({ isDark }) => (
   <div className="px-5 sm:px-8 pb-16">
     <div className="pt-8 pb-10 text-center">
-      <h1>
-        <span className="inline-flex items-center justify-center gap-3">
-          <img
-            src="/mojigana-icon.jpg"
-            alt=""
-            width="768"
-            height="768"
-            className="h-12 w-12 rounded-2xl object-cover"
-          />
-          <span
-            className={`text-5xl font-black tracking-tight ${
-              isDark ? 'text-slate-100' : 'text-slate-800'
-            }`}
-          >
-            MojiGana
-          </span>
-        </span>
-        <span
-          className={`mt-3 block text-lg font-medium ${
-            isDark ? 'text-slate-400' : 'text-slate-500'
-          }`}
-        >
-          Free hiragana and katakana flashcards
-        </span>
+      <h1
+        className={`text-lg font-medium ${
+          isDark ? 'text-slate-400' : 'text-slate-500'
+        }`}
+      >
+        Free hiragana and katakana flashcards
       </h1>
       <p
         className={`mx-auto mt-4 max-w-md text-[15px] leading-relaxed ${

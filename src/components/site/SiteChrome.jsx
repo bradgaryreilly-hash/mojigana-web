@@ -2,9 +2,8 @@ import { useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { SITE_PAGES } from '../../lib/sitePaths';
 
-const NAV = [
+const FOOTER_NAV = [
   SITE_PAGES.home,
-  SITE_PAGES.flashcards,
   SITE_PAGES.about,
   SITE_PAGES.contact,
   SITE_PAGES.privacy,
@@ -34,13 +33,47 @@ const SiteChrome = ({ path, isDark, toggleTheme, children }) => {
         className={`w-full max-w-xl min-h-[100dvh] relative shadow-2xl flex flex-col transition-colors duration-300 box-border pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] ${shellBg}`}
       >
         <header
-          className={`sticky top-0 z-20 flex items-center gap-2 px-3 sm:px-4 py-3 backdrop-blur-md ${headerBg}`}
+          className={`sticky top-0 z-20 flex items-center justify-between gap-2 px-3 sm:px-4 py-3 backdrop-blur-md ${headerBg}`}
         >
-          <nav
-            className="flex flex-1 flex-wrap items-center justify-center gap-x-2 sm:gap-x-3 gap-y-1.5 min-w-0"
-            aria-label="Site"
+          <a
+            href={SITE_PAGES.home.path}
+            aria-label="Home"
+            aria-current={path === SITE_PAGES.home.path ? 'page' : undefined}
+            className="z-10 shrink-0 rounded-xl active:scale-95 transition-transform"
           >
-            {NAV.map((item) => {
+            <img
+              src={`${import.meta.env.BASE_URL}mojigana-icon.jpg`}
+              alt=""
+              width="768"
+              height="768"
+              className="h-10 w-10 rounded-xl object-cover"
+            />
+          </a>
+          <p
+            className={`pointer-events-none absolute left-1/2 -translate-x-1/2 text-2xl font-black tracking-tight ${
+              isDark ? 'text-slate-100' : 'text-slate-800'
+            }`}
+          >
+            MojiGana
+          </p>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className={`p-2 sm:p-3 rounded-full shrink-0 active:scale-95 transition-all ${
+              isDark ? 'text-amber-500' : 'text-black'
+            }`}
+          >
+            {isDark ? <Sun size={24} /> : <Moon size={24} />}
+          </button>
+        </header>
+        <main className="flex-1">{children}</main>
+        <footer className={`px-3 sm:px-4 py-4 ${headerBg}`}>
+          <nav
+            className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5"
+            aria-label="Home, about, contact, and privacy"
+          >
+            {FOOTER_NAV.map((item) => {
               const active = path === item.path;
               return (
                 <a
@@ -62,18 +95,7 @@ const SiteChrome = ({ path, isDark, toggleTheme, children }) => {
               );
             })}
           </nav>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className={`p-2 sm:p-3 rounded-full shrink-0 active:scale-95 transition-all ${
-              isDark ? 'text-amber-500' : 'text-black'
-            }`}
-          >
-            {isDark ? <Sun size={24} /> : <Moon size={24} />}
-          </button>
-        </header>
-        <main className="flex-1">{children}</main>
+        </footer>
       </div>
     </div>
   );
