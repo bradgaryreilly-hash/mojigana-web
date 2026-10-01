@@ -44,9 +44,25 @@ export function pagePath(pathname = '/') {
 }
 
 export function titleForPath(path) {
-  if (path === '/' || path === '/flashcards') return 'MojiGana';
+  if (path === '/') return 'Free Hiragana & Katakana Flashcards | MojiGana';
+  if (path === '/flashcards') return 'Practice Hiragana & Katakana Flashcards | MojiGana';
   if (path === '/about') return 'About MojiGana';
   if (path === '/contact') return 'Contact — MojiGana';
   if (path === '/privacy') return 'Privacy policy — MojiGana';
   return 'MojiGana';
+}
+
+export function descriptionForPath(path) {
+  if (path === '/') {
+    return 'Free customizable hiragana and katakana flashcards. Practice the characters you choose, including Japanese numbers, in your browser. No account.';
+  }
+  if (path === '/flashcards') {
+    return 'Practice free hiragana, katakana, and Japanese number flashcards. Choose your characters, then answer by typing or multiple choice.';
+  }
+  if (path === '/about') {
+    return 'About MojiGana, free hiragana and katakana flashcards you can practice in the browser.';
+  }
+  if (path === '/contact') return 'Contact MojiGana.';
+  if (path === '/privacy') return 'How MojiGana handles information when you use this website.';
+  return 'Free hiragana and katakana flashcards from MojiGana.';
 }

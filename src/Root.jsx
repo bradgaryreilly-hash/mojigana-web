@@ -4,7 +4,7 @@ import SiteChrome from './components/site/SiteChrome';
 import NewsHome from './components/site/NewsHome';
 import InfoPage from './components/site/InfoPage';
 import { useSiteTheme } from './hooks/useSiteTheme';
-import { pagePath, titleForPath } from './lib/sitePaths';
+import { descriptionForPath, pagePath, titleForPath } from './lib/sitePaths';
 
 const INFO_PAGE_KEYS = {
   '/about': 'about',
@@ -49,6 +49,8 @@ const Root = () => {
 
   useEffect(() => {
     document.title = titleForPath(path);
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute('content', descriptionForPath(path));
   }, [path]);
 
   if (path === '/flashcards') return <App />;
