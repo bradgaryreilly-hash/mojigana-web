@@ -374,7 +374,7 @@ const ResultsView = ({
                         {item.char}
                       </span>
                       <span
-                        className={`truncate text-left text-[11px] font-black uppercase tracking-wide ${
+                        className={`truncate text-left text-[11px] font-black lowercase tracking-wide ${
                           isDark ? 'text-slate-400' : 'text-slate-500'
                         }`}
                         title={item.romaji ?? ''}

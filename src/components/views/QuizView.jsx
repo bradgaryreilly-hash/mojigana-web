@@ -181,7 +181,7 @@ const QuizView = ({
                     </span>
                     <div className="absolute bottom-1.5 left-0 right-0 px-0.5 text-center">
                       <span
-                        className={`line-clamp-2 text-xs font-black uppercase leading-tight tracking-wide sm:text-sm ${
+                        className={`line-clamp-2 text-xs font-black lowercase leading-tight tracking-wide sm:text-sm ${
                           isDark ? 'text-white/30' : 'text-slate-900/30'
                         }`}
                       >
@@ -268,10 +268,10 @@ const QuizView = ({
                       } ${
                         romajiPrompt
                           ? (currentQuizItem?.romaji.length ?? 0) > 4
-                            ? 'text-[2.15em] uppercase'
+                            ? 'text-[2.15em] lowercase'
                             : (currentQuizItem?.romaji.length ?? 0) > 2
-                              ? 'text-[2.8em] uppercase'
-                              : 'text-[3.6em] uppercase'
+                              ? 'text-[2.8em] lowercase'
+                              : 'text-[3.6em] lowercase'
                           : currentQuizItem?.char.length > 1
                             ? 'text-[3.35em]'
                             : 'text-[5em]'
@@ -294,7 +294,7 @@ const QuizView = ({
                         className={`line-clamp-3 text-center font-black leading-tight ${
                           romajiPrompt
                             ? 'text-4xl sm:text-5xl'
-                            : 'text-base uppercase tracking-wide sm:text-lg'
+                            : 'text-base lowercase tracking-wide sm:text-lg'
                         } ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
                       >
                         {currentQuizItem ? revealOf(currentQuizItem) : ''}
@@ -353,8 +353,8 @@ const QuizView = ({
                     className={`whitespace-nowrap ${
                       romajiPrompt
                         ? promptOf(nextQuizItem).length > 2
-                          ? 'text-2xl uppercase'
-                          : 'text-4xl uppercase'
+                          ? 'text-2xl lowercase'
+                          : 'text-4xl lowercase'
                         : nextQuizItem.char.length > 1
                           ? 'text-4xl'
                           : 'text-6xl'
@@ -431,7 +431,7 @@ const QuizView = ({
                   >
                     {romajiPrompt
                       ? glyphForRomaji(opt, currentQuizItem)
-                      : opt.toUpperCase()}
+                      : opt.toLowerCase()}
                   </button>
                 </div>
               ))}
@@ -480,7 +480,7 @@ const QuizView = ({
                   autoComplete="off"
                   autoCorrect="off"
                   spellCheck={false}
-                  className={`w-full rounded-[16px] sm:rounded-[21px] py-2.5 sm:py-4 text-center text-xl sm:text-3xl font-black focus:outline-none transition-all ${
+                  className={`w-full rounded-[16px] sm:rounded-[21px] py-2.5 sm:py-4 text-center text-xl sm:text-3xl font-black lowercase placeholder:normal-case focus:outline-none transition-all ${
                     isPaused
                       ? 'bg-slate-900 text-slate-500 placeholder-slate-500'
                       : isWrong

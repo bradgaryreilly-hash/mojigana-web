@@ -42,10 +42,10 @@ const SiteChrome = ({ path, isDark, toggleTheme, children }) => {
             className="z-10 shrink-0 rounded-xl active:scale-95 transition-transform"
           >
             <img
-              src={`${import.meta.env.BASE_URL}mojigana-icon.jpg`}
+              src="/mojigana-icon.jpg"
               alt=""
-              width="768"
-              height="768"
+              width="40"
+              height="40"
               className="h-10 w-10 rounded-xl object-cover"
             />
           </a>

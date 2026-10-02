@@ -24,10 +24,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Project Pages URL is /<repo>/ ; Vite must match or JS/CSS 404 (blank site).
+      # mojigana.com is a custom domain at the site root. A /mojigana-web/ base
+      # makes public files (logo, favicon) 404. Leave base as '/' .
       - run: npm run build
-        env:
-          VITE_PAGES_BASE: /mojigana-web/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

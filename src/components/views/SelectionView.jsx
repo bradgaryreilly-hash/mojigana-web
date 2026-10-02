@@ -114,9 +114,9 @@ const SelectionView = ({
               : 'text-slate-500'
           }`}
         >
-          <span className="uppercase font-black">{key}</span>
+          <span className="lowercase font-black">{key}</span>
           {type === 'numbers' && (
-            <span className="uppercase font-black opacity-80 mt-[1%]">
+            <span className="lowercase font-black opacity-80 mt-[1%]">
               {item.romaji}
             </span>
           )}

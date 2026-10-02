@@ -105,11 +105,11 @@ async function copyRouteHtml(outDir, html) {
 }
 
 // https://vite.dev/config/
-// GitHub project Pages URLs are /repo-name/; set VITE_PAGES_BASE in CI (see deploy workflow).
-// When using a custom domain at the site root, omit that env so base stays '/'.
+// mojigana.com is served at the domain root. A /mojigana-web/ base prefixes
+// public files (logo, favicon) and those URLs 404 on the custom domain.
 export default defineConfig({
   plugins: [react(), productionGhPagesHtml(), inlineIifeBundle()],
-  base: process.env.VITE_PAGES_BASE || '/',
+  base: '/',
   build: {
     target: ['es2020', 'safari14'],
     rollupOptions: {
