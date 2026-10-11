@@ -106,7 +106,9 @@ const SelectionView = ({
           </span>
         </div>
         <div
-          className={`flex flex-col items-center leading-[1] shrink-0 transition-colors text-[0.7em] mb-[5%] ${
+          className={`flex flex-col items-center leading-[1] shrink-0 transition-colors mb-[5%] ${
+            type === 'numbers' ? 'text-[0.7em]' : 'text-[0.85em]'
+          } ${
             isSelected
               ? isDark
                 ? 'text-white'
@@ -114,7 +116,9 @@ const SelectionView = ({
               : 'text-slate-500'
           }`}
         >
-          <span className="lowercase font-black">{key}</span>
+          <span className="lowercase font-black">
+            {type === 'numbers' ? key : item.label || key}
+          </span>
           {type === 'numbers' && (
             <span className="lowercase font-black opacity-80 mt-[1%]">
               {item.romaji}

@@ -2,6 +2,35 @@ import { Play } from 'lucide-react';
 import { NEWS_POSTS } from '../../data/news';
 import AdBanner from './AdBanner';
 
+const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+
+function paragraphWithEmailLinks(text, isDark) {
+  const nodes = [];
+  let last = 0;
+  let match;
+  let index = 0;
+  const pattern = new RegExp(EMAIL_PATTERN.source, 'g');
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > last) nodes.push(text.slice(last, match.index));
+    const email = match[0];
+    nodes.push(
+      <a
+        key={`${email}-${index}`}
+        href={`mailto:${email}`}
+        className={`underline underline-offset-2 ${
+          isDark ? 'text-[#2DD4BF]' : 'text-[#06948E]'
+        }`}
+      >
+        {email}
+      </a>,
+    );
+    last = match.index + email.length;
+    index += 1;
+  }
+  if (last < text.length) nodes.push(text.slice(last));
+  return nodes;
+}
+
 const NewsHome = ({ isDark }) => (
   <div className="px-5 sm:px-8 pb-16">
     <div className="pt-8 pb-10 text-center">
@@ -85,7 +114,7 @@ const NewsHome = ({ isDark }) => (
                       isDark ? 'text-slate-300' : 'text-slate-600'
                     }`}
                   >
-                    {text}
+                    {paragraphWithEmailLinks(text, isDark)}
                   </p>
                 ))}
               </div>

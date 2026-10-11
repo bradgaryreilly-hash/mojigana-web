@@ -13,24 +13,49 @@ export const KANA_DICT = {
   'ma': { h: 'ま', k: 'マ' }, 'mi': { h: 'み', k: 'ミ' }, 'mu': { h: 'む', k: 'ム' }, 'me': { h: 'め', k: 'メ' }, 'mo': { h: 'も', k: 'モ' },
   'ya': { h: 'や', k: 'ヤ' }, 'yu': { h: 'ゆ', k: 'ユ' }, 'yo': { h: 'よ', k: 'ヨ' },
   'ra': { h: 'ら', k: 'ラ' }, 'ri': { h: 'り', k: 'リ' }, 'ru': { h: 'る', k: 'ル' }, 're': { h: 'れ', k: 'レ' }, 'ro': { h: 'ろ', k: 'ロ' },
-  'wa': { h: 'わ', k: 'ワ' }, 'wo': { h: 'を', k: 'ヲ' }, 'n': { h: 'ん', k: 'ン' },
+  'wa': { h: 'わ', k: 'ワ' }, 'wo': { h: 'を', k: 'ヲ' }, 'n': { h: 'ん', k: 'ン', aliases: ['nn', "n'", 'n’'] },
   'ga': { h: 'が', k: 'ガ' }, 'gi': { h: 'ぎ', k: 'ギ' }, 'gu': { h: 'ぐ', k: 'グ' }, 'ge': { h: 'げ', k: 'ゲ' }, 'go': { h: 'ご', k: 'ゴ' },
-  'za': { h: 'ざ', k: 'ザ' }, 'ji': { h: 'じ', k: 'ジ' }, 'zu': { h: 'ず', k: 'ズ' }, 'ze': { h: 'ぜ', k: 'ゼ' }, 'zo': { h: 'ぞ', k: 'ゾ' },
-  'da': { h: 'だ', k: 'ダ' }, 'de': { h: 'で', k: 'デ' }, 'do': { h: 'ど', k: 'ド' },
+  'za': { h: 'ざ', k: 'ザ' }, 'ji': { h: 'じ', k: 'ジ', aliases: ['zi'] }, 'zu': { h: 'ず', k: 'ズ' }, 'ze': { h: 'ぜ', k: 'ゼ' }, 'zo': { h: 'ぞ', k: 'ゾ' },
+  'da': { h: 'だ', k: 'ダ' },
+  // Cards show ji/zu. Typed answers are di/du so they stay distinct from じ/ず.
+  'di': { h: 'ぢ', k: 'ヂ', label: 'ji', keyboard: ['di'] },
+  'du': { h: 'づ', k: 'ヅ', label: 'zu', keyboard: ['du'] },
+  'de': { h: 'で', k: 'デ' }, 'do': { h: 'ど', k: 'ド' },
   'ba': { h: 'ば', k: 'バ' }, 'bi': { h: 'び', k: 'ビ' }, 'bu': { h: 'ぶ', k: 'ブ' }, 'be': { h: 'べ', k: 'ベ' }, 'bo': { h: 'ぼ', k: 'ボ' },
   'pa': { h: 'ぱ', k: 'パ' }, 'pi': { h: 'ぴ', k: 'ピ' }, 'pu': { h: 'ぷ', k: 'プ' }, 'pe': { h: 'ぺ', k: 'ペ' }, 'po': { h: 'ぽ', k: 'ポ' },
   'kya': { h: 'きゃ', k: 'キャ' }, 'kyu': { h: 'きゅ', k: 'キュ' }, 'kyo': { h: 'きょ', k: 'キョ' },
-  'sha': { h: 'しゃ', k: 'シャ' }, 'shu': { h: 'しゅ', k: 'シュ' }, 'sho': { h: 'しょ', k: 'ショ' },
-  'cha': { h: 'ちゃ', k: 'チャ' }, 'chu': { h: 'ちゅ', k: 'チュ' }, 'cho': { h: 'ちょ', k: 'チョ' },
+  'sha': { h: 'しゃ', k: 'シャ', aliases: ['sya'] }, 'shu': { h: 'しゅ', k: 'シュ', aliases: ['syu'] }, 'sho': { h: 'しょ', k: 'ショ', aliases: ['syo'] },
+  'cha': { h: 'ちゃ', k: 'チャ', aliases: ['tya'] }, 'chu': { h: 'ちゅ', k: 'チュ', aliases: ['tyu'] }, 'cho': { h: 'ちょ', k: 'チョ', aliases: ['tyo'] },
   'nya': { h: 'にゃ', k: 'ニャ' }, 'nyu': { h: 'にゅ', k: 'ニュ' }, 'nyo': { h: 'にょ', k: 'ニョ' },
   'hya': { h: 'ひゃ', k: 'ヒャ' }, 'hyu': { h: 'ひゅ', k: 'ヒュ' }, 'hyo': { h: 'ひょ', k: 'ヒョ' },
   'mya': { h: 'みゃ', k: 'ミャ' }, 'myu': { h: 'みゅ', k: 'ミュ' }, 'myo': { h: 'みょ', k: 'ミョ' },
   'rya': { h: 'りゃ', k: 'リャ' }, 'ryu': { h: 'りゅ', k: 'リュ' }, 'ryo': { h: 'りょ', k: 'リョ' },
   'gya': { h: 'ぎゃ', k: 'ギャ' }, 'gyu': { h: 'ぎゅ', k: 'ギュ' }, 'gyo': { h: 'ぎょ', k: 'ギョ' },
-  'ja': { h: 'じゃ', k: 'ジャ' }, 'ju': { h: 'じゅ', k: 'ジュ' }, 'jo': { h: 'じょ', k: 'ジョ' },
+  'ja': { h: 'じゃ', k: 'ジャ', aliases: ['jya', 'zya'] }, 'ju': { h: 'じゅ', k: 'ジュ', aliases: ['jyu', 'zyu'] }, 'jo': { h: 'じょ', k: 'ジョ', aliases: ['jyo', 'zyo'] },
   'bya': { h: 'びゃ', k: 'ビャ' }, 'byu': { h: 'びゅ', k: 'ビュ' }, 'byo': { h: 'びょ', k: 'ビョ' },
   'pya': { h: 'ぴゃ', k: 'ピャ' }, 'pyu': { h: 'ぴゅ', k: 'ピュ' }, 'pyo': { h: 'ぴょ', k: 'ピョ' }
 };
+
+/** Kana whose typed spelling is not only the reading shown on the card. */
+export const TEXT_INPUT_NOTES = [
+  { h: 'し', k: 'シ', reading: 'shi', keyboard: 'shi, si' },
+  { h: 'ち', k: 'チ', reading: 'chi', keyboard: 'chi, ti' },
+  { h: 'つ', k: 'ツ', reading: 'tsu', keyboard: 'tsu, tu' },
+  { h: 'ふ', k: 'フ', reading: 'fu', keyboard: 'fu, hu' },
+  { h: 'ん', k: 'ン', reading: 'n', keyboard: "n, nn, n'" },
+  { h: 'じ', k: 'ジ', reading: 'ji', keyboard: 'ji, zi' },
+  { h: 'ぢ', k: 'ヂ', reading: 'ji, di', keyboard: 'di' },
+  { h: 'づ', k: 'ヅ', reading: 'zu, du', keyboard: 'du' },
+  { h: 'しゃ', k: 'シャ', reading: 'sha', keyboard: 'sha, sya' },
+  { h: 'しゅ', k: 'シュ', reading: 'shu', keyboard: 'shu, syu' },
+  { h: 'しょ', k: 'ショ', reading: 'sho', keyboard: 'sho, syo' },
+  { h: 'ちゃ', k: 'チャ', reading: 'cha', keyboard: 'cha, tya' },
+  { h: 'ちゅ', k: 'チュ', reading: 'chu', keyboard: 'chu, tyu' },
+  { h: 'ちょ', k: 'チョ', reading: 'cho', keyboard: 'cho, tyo' },
+  { h: 'じゃ', k: 'ジャ', reading: 'ja', keyboard: 'ja, jya, zya' },
+  { h: 'じゅ', k: 'ジュ', reading: 'ju', keyboard: 'ju, jyu, zyu' },
+  { h: 'じょ', k: 'ジョ', reading: 'jo', keyboard: 'jo, jyo, zyo' },
+];
 
 export const NUM_DICT = {
   '1': { char: '一', romaji: 'ichi' }, '2': { char: '二', romaji: 'ni' }, '3': { char: '三', romaji: 'san' },
@@ -48,7 +73,7 @@ export const BASIC_GRID = [
 ];
 
 export const DAKUON_GRID = [
-  ['ga', 'gi', 'gu', 'ge', 'go'], ['za', 'ji', 'zu', 'ze', 'zo'], ['da', null, null, 'de', 'do'],
+  ['ga', 'gi', 'gu', 'ge', 'go'], ['za', 'ji', 'zu', 'ze', 'zo'], ['da', 'di', 'du', 'de', 'do'],
   ['ba', 'bi', 'bu', 'be', 'bo'], ['pa', 'pi', 'pu', 'pe', 'po']
 ];
 

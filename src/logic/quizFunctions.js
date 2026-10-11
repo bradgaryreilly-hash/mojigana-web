@@ -58,10 +58,11 @@ export const generateChoices = (item, choiceCount = 3) => {
     return [item.romaji, ...chosen].sort(() => Math.random() - 0.5);
   }
 
-  const comboKeys = COMBO_GRID.flat().filter((k) => k !== null);
-  const basicKeys = [...BASIC_GRID.flat(), ...DAKUON_GRID.flat()].filter(
-    (k) => k !== null,
-  );
+  const readingForKey = (key) => KANA_DICT[key]?.label || key;
+  const comboKeys = COMBO_GRID.flat().filter((k) => k !== null).map(readingForKey);
+  const basicKeys = [...BASIC_GRID.flat(), ...DAKUON_GRID.flat()]
+    .filter((k) => k !== null)
+    .map(readingForKey);
   const isComboItem = comboKeys.includes(item.romaji);
   const activePool = isComboItem ? comboKeys : basicKeys;
   const chosen = pickDistractors(

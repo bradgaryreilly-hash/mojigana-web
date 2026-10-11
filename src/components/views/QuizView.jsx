@@ -47,8 +47,19 @@ const QuizView = ({
   const scrollAreaRef = useRef(null);
   const timerText = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
   const romajiPrompt = isMultipleChoice && mcRomajiPrompt;
+  const spellingOf = (item) => {
+    if (!item) return '';
+    if (
+      !isMultipleChoice &&
+      item.accepted?.length &&
+      !item.accepted.includes(item.romaji)
+    ) {
+      return item.accepted[0];
+    }
+    return item.romaji ?? '';
+  };
   const promptOf = (item) => (romajiPrompt ? item.romaji : item.char);
-  const revealOf = (item) => (romajiPrompt ? item.char : item.romaji);
+  const revealOf = (item) => (romajiPrompt ? item.char : spellingOf(item));
 
   useLayoutEffect(() => {
     let alive = true;
@@ -173,7 +184,7 @@ const QuizView = ({
                       }}
                       className={`whitespace-nowrap ${
                         prevQuizItem.char.length > 1 ? 'text-4xl' : 'text-6xl'
-                      } font-bold ${
+                      } font-medium ${
                         isDark ? 'text-white/30' : 'text-slate-900/30'
                       }`}
                     >
@@ -185,7 +196,7 @@ const QuizView = ({
                           isDark ? 'text-white/30' : 'text-slate-900/30'
                         }`}
                       >
-                        {prevQuizItem.romaji}
+                        {spellingOf(prevQuizItem)}
                       </span>
                     </div>
                   </>
@@ -263,7 +274,7 @@ const QuizView = ({
                             ? 'drop-shadow(0 0 15px #ef4444)'
                             : 'none',
                       }}
-                      className={`max-w-full text-center leading-none select-none font-bold whitespace-nowrap ${
+                      className={`max-w-full text-center leading-none select-none font-medium whitespace-nowrap ${
                         isDark ? 'text-slate-100' : 'text-slate-950'
                       } ${
                         romajiPrompt
@@ -358,7 +369,7 @@ const QuizView = ({
                         : nextQuizItem.char.length > 1
                           ? 'text-4xl'
                           : 'text-6xl'
-                    } font-bold ${isDark ? 'text-white/30' : 'text-slate-900/30'}`}
+                    } font-medium ${isDark ? 'text-white/30' : 'text-slate-900/30'}`}
                   >
                     {promptOf(nextQuizItem)}
                   </span>

@@ -1,4 +1,6 @@
-import { Settings, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ChevronLeft, Info, Settings, X } from 'lucide-react';
+import { TEXT_INPUT_NOTES } from '../../data/kanaData';
 import { SITE_INFO_ORDER, SITE_INFO_PAGES } from '../../data/siteInfoContent';
 import { pathForInfoKey } from '../../lib/sitePaths';
 
@@ -21,19 +23,30 @@ const SettingsModal = ({
   manualAnswerConfirm,
   setManualAnswerConfirm,
 }) => {
+  const [showKeyboardInfo, setShowKeyboardInfo] = useState(false);
+
+  useEffect(() => {
+    if (!isSettingsOpen) setShowKeyboardInfo(false);
+  }, [isSettingsOpen]);
+
   if (!isSettingsOpen) return null;
+
+  const closeSettings = () => {
+    setShowKeyboardInfo(false);
+    setIsSettingsOpen(false);
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 touch-none animate-in fade-in duration-200">
       <div
         role="presentation"
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-        onClick={() => setIsSettingsOpen(false)}
+        onClick={closeSettings}
       />
       <div
-        className={`w-full max-w-xs rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-200 ${
-          isDark ? 'bg-slate-800 text-white' : 'bg-white text-[#0f172a]'
-        }`}
+        className={`w-full rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-200 ${
+          showKeyboardInfo ? 'max-w-sm' : 'max-w-xs'
+        } ${isDark ? 'bg-slate-800 text-white' : 'bg-white text-[#0f172a]'}`}
       >
         <div
           className={`p-6 border-b flex items-center justify-between ${
@@ -41,20 +54,36 @@ const SettingsModal = ({
           }`}
         >
           <div className="flex items-center gap-2">
-            <Settings size={18} className="text-[#06948E]" />
+            {showKeyboardInfo ? (
+              <button
+                type="button"
+                onClick={() => setShowKeyboardInfo(false)}
+                aria-label="Back to settings"
+                className="text-slate-400 active:scale-95 transition-all"
+              >
+                <ChevronLeft size={22} />
+              </button>
+            ) : (
+              <Settings size={18} className="text-[#06948E]" />
+            )}
             <h3 className="font-bold uppercase tracking-wider text-sm">
-              Settings
+              {showKeyboardInfo ? 'More info' : 'Settings'}
             </h3>
           </div>
           <button
             type="button"
-            onClick={() => setIsSettingsOpen(false)}
+            onClick={closeSettings}
+            aria-label="Close settings"
             className="text-slate-400 active:scale-95 transition-all"
           >
             <X size={24} />
           </button>
         </div>
         <div className="max-h-[min(78dvh,36rem)] overflow-y-auto p-6 space-y-6">
+          {showKeyboardInfo ? (
+            <KeyboardSpellingInfo isDark={isDark} />
+          ) : (
+          <>
           <div className="space-y-2">
             <span className="font-bold text-sm">Answer</span>
             <div
@@ -97,6 +126,20 @@ const SettingsModal = ({
                 Multiple choice
               </button>
             </div>
+            {!isMultipleChoice && (
+              <button
+                type="button"
+                onClick={() => setShowKeyboardInfo(true)}
+                className={`flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold transition-all active:scale-[0.99] ${
+                  isDark
+                    ? 'bg-slate-900/80 text-slate-200 border border-slate-700'
+                    : 'bg-slate-50 text-slate-800 border border-slate-100'
+                }`}
+              >
+                <Info size={16} className="text-[#06948E]" />
+                More info
+              </button>
+            )}
           </div>
           {isMultipleChoice && (
             <div className="space-y-2">
@@ -303,10 +346,57 @@ const SettingsModal = ({
               ))}
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>
   );
 };
+
+const KeyboardSpellingInfo = ({ isDark }) => (
+  <div className="space-y-4">
+    <p
+      className={`text-sm leading-relaxed ${
+        isDark ? 'text-slate-300' : 'text-slate-600'
+      }`}
+    >
+      These are the flashcard kana whose keyboard spelling is different from
+      the usual reading. Every other kana uses the same spelling for both.
+    </p>
+    <table className="w-full text-sm">
+      <thead>
+        <tr
+          className={`text-[10px] font-black uppercase tracking-wider ${
+            isDark ? 'text-slate-400' : 'text-slate-500'
+          }`}
+        >
+          <th className="pb-2 pr-3 text-left font-black">Kana</th>
+          <th className="pb-2 pr-3 text-left font-black">Reading</th>
+          <th className="pb-2 text-left font-black">Keyboard</th>
+        </tr>
+      </thead>
+      <tbody>
+        {TEXT_INPUT_NOTES.map((row) => (
+          <tr
+            key={`${row.h}-${row.keyboard}`}
+            className={`border-t ${
+              isDark ? 'border-slate-700' : 'border-slate-100'
+            }`}
+          >
+            <td
+              className="py-2 pr-3 whitespace-nowrap text-base font-bold"
+              style={{ fontFamily: "'Sawarabi Gothic', sans-serif" }}
+            >
+              {row.h} {row.k}
+            </td>
+            <td className="py-2 pr-3 lowercase">{row.reading}</td>
+            <td className="py-2 lowercase">{row.keyboard}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 
 export default SettingsModal;

@@ -55,6 +55,15 @@ function isEnterConfirmKeyEvent(e) {
   );
 }
 
+function acceptedSpellings(item) {
+  if (!item) return [];
+  if (item.accepted?.length) return item.accepted;
+  return [item.romaji, ...(item.aliases || [])];
+}
+
+/** Wait before accepting "n" so "nn" and "n'" can still be typed. */
+const AMBIGUOUS_ACCEPT_MS = 500;
+
 export const useMojiganaApp = () => {
   const persisted = useMemo(() => loadPersistedState(), []);
 
@@ -111,6 +120,8 @@ export const useMojiganaApp = () => {
   const syncSubmitGuardRef = useRef(false);
   /** Clears input after wrong flash; cancelled if user answers correctly during the flash. */
   const wrongFlashTimerRef = useRef(null);
+  /** Delays auto-accept when a finished spelling is also the start of a longer one. */
+  const pendingAcceptTimerRef = useRef(null);
   /** Session Hits/Miss (and session Pts) use only the first graded answer per card; reset on shiftQueue. */
   const sessionOutcomeCommittedRef = useRef(false);
   const timerRef = useRef(null);
@@ -122,17 +133,29 @@ export const useMojiganaApp = () => {
   const isDark = theme === 'dark';
   const currentQuizItem = quizQueue[0] || null;
   const nextQuizItem = quizQueue[1] || null;
+  const currentQuizItemRef = useRef(currentQuizItem);
+  currentQuizItemRef.current = currentQuizItem;
 
   useEffect(() => {
     currentViewRef.current = currentView;
   }, [currentView]);
 
+  const clearPendingAccept = useCallback(() => {
+    if (pendingAcceptTimerRef.current != null) {
+      clearTimeout(pendingAcceptTimerRef.current);
+      pendingAcceptTimerRef.current = null;
+    }
+  }, []);
+
   const clearWrongFlashTimer = useCallback(() => {
+    clearPendingAccept();
     if (wrongFlashTimerRef.current != null) {
       clearTimeout(wrongFlashTimerRef.current);
       wrongFlashTimerRef.current = null;
     }
-  }, []);
+  }, [clearPendingAccept]);
+
+  useEffect(() => () => clearPendingAccept(), [clearPendingAccept]);
 
   const clearQuizEphemeralState = useCallback(() => {
     clearWrongFlashTimer();
@@ -372,12 +395,17 @@ export const useMojiganaApp = () => {
         }
         const item = KANA_DICT[key];
         const char = typePrefix === 'h' ? item.h : item.k;
+        const romaji = item.label || key;
+        const accepted = item.keyboard
+          ? item.keyboard
+          : [...new Set([romaji, ...(item.aliases || [])])];
         return {
           id,
-          romaji: key,
+          romaji,
           char,
           type: typePrefix === 'h' ? 'hiragana' : 'katakana',
-          aliases: item.aliases || [],
+          aliases: accepted.filter((answer) => answer !== romaji),
+          accepted,
         };
       }),
     [selectedIds],
@@ -458,10 +486,7 @@ export const useMojiganaApp = () => {
     const val = raw.toLowerCase().trim();
     if (val.length === 0) return;
 
-    const allPossible = [
-      currentQuizItem.romaji,
-      ...(currentQuizItem.aliases || []),
-    ];
+    const allPossible = acceptedSpellings(currentQuizItem);
 
     if (isWrong) {
       if (!allPossible.includes(val)) return;
@@ -571,18 +596,24 @@ export const useMojiganaApp = () => {
 
     const val = raw.toLowerCase().trim();
     setInputValue(raw);
-    if (!currentQuizItem) return;
-    const allPossible = [
-      currentQuizItem.romaji,
-      ...(currentQuizItem.aliases || []),
-    ];
+    clearPendingAccept();
+    if (!currentQuizItem || val.length === 0) return;
+    const allPossible = acceptedSpellings(currentQuizItem);
+    const isExact = allPossible.includes(val);
+    const hasLonger = allPossible.some(
+      (answer) => answer.length > val.length && answer.startsWith(val),
+    );
 
-    if (allPossible.includes(val)) {
+    if (isExact && hasLonger) {
+      const itemId = currentQuizItem.id;
+      pendingAcceptTimerRef.current = setTimeout(() => {
+        pendingAcceptTimerRef.current = null;
+        if (currentQuizItemRef.current?.id !== itemId) return;
+        submitTypedAnswer(val);
+      }, AMBIGUOUS_ACCEPT_MS);
+    } else if (isExact) {
       submitTypedAnswer(raw);
-    } else if (
-      val.length > 0 &&
-      !allPossible.some((answer) => answer.startsWith(val))
-    ) {
+    } else if (!allPossible.some((answer) => answer.startsWith(val))) {
       submitTypedAnswer(raw);
     }
   };
