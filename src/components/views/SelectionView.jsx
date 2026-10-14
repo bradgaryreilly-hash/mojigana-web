@@ -92,7 +92,7 @@ const SelectionView = ({
               fontFamily: "'Sawarabi Gothic', sans-serif",
               wordBreak: 'keep-all',
             }}
-            className={`font-bold leading-none transition-colors whitespace-nowrap overflow-hidden text-ellipsis ${
+            className={`font-medium leading-none transition-colors whitespace-nowrap overflow-hidden text-ellipsis ${
               isMultiGlyphChar ? 'text-[1.35em]' : 'text-[1.8em]'
             } ${
               isDark

@@ -17,7 +17,7 @@ export const KANA_DICT = {
   'ga': { h: 'が', k: 'ガ' }, 'gi': { h: 'ぎ', k: 'ギ' }, 'gu': { h: 'ぐ', k: 'グ' }, 'ge': { h: 'げ', k: 'ゲ' }, 'go': { h: 'ご', k: 'ゴ' },
   'za': { h: 'ざ', k: 'ザ' }, 'ji': { h: 'じ', k: 'ジ', aliases: ['zi'] }, 'zu': { h: 'ず', k: 'ズ' }, 'ze': { h: 'ぜ', k: 'ゼ' }, 'zo': { h: 'ぞ', k: 'ゾ' },
   'da': { h: 'だ', k: 'ダ' },
-  // Cards show ji/zu. Typed answers are di/du so they stay distinct from じ/ず.
+  // Cards show ji/zu. Text answers also accept the keyboard spellings di/du.
   'di': { h: 'ぢ', k: 'ヂ', label: 'ji', keyboard: ['di'] },
   'du': { h: 'づ', k: 'ヅ', label: 'zu', keyboard: ['du'] },
   'de': { h: 'で', k: 'デ' }, 'do': { h: 'ど', k: 'ド' },

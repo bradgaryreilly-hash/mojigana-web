@@ -396,9 +396,9 @@ export const useMojiganaApp = () => {
         const item = KANA_DICT[key];
         const char = typePrefix === 'h' ? item.h : item.k;
         const romaji = item.label || key;
-        const accepted = item.keyboard
-          ? item.keyboard
-          : [...new Set([romaji, ...(item.aliases || [])])];
+        const accepted = [
+          ...new Set([romaji, ...(item.keyboard || []), ...(item.aliases || [])]),
+        ];
         return {
           id,
           romaji,

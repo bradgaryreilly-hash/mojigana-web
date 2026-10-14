@@ -295,7 +295,7 @@ const ResultsView = ({
 
         <AdBanner slot="5332946596" />
       </div>
-      <div className="shrink-0 px-5 pb-3 pt-3">
+      <div className="relative z-10 shrink-0 -mt-8 px-5 pb-6 pt-3">
         <button
           type="button"
           onClick={() => {

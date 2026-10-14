@@ -1,6 +1,5 @@
 import { Play } from 'lucide-react';
 import { NEWS_POSTS } from '../../data/news';
-import AdBanner from './AdBanner';
 
 const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
 
@@ -61,7 +60,6 @@ const NewsHome = ({ isDark }) => (
       >
         <Play size={22} fill="currentColor" /> Practice flashcards
       </a>
-      <AdBanner className="mt-8" />
     </div>
 
     <section aria-labelledby="news-heading">
