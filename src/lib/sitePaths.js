@@ -44,11 +44,11 @@ export function pagePath(pathname = '/') {
 }
 
 export function titleForPath(path) {
-  if (path === '/') return 'Free Hiragana & Katakana Flashcards | MojiGana';
-  if (path === '/flashcards') return 'Practice Hiragana & Katakana Flashcards | MojiGana';
-  if (path === '/about') return 'About MojiGana';
-  if (path === '/contact') return 'Contact — MojiGana';
-  if (path === '/privacy') return 'Privacy policy — MojiGana';
+  if (path === '/') return 'MojiGana | Free Hiragana & Katakana Flashcards';
+  if (path === '/flashcards') return 'MojiGana | Flashcards';
+  if (path === '/about') return 'MojiGana | About';
+  if (path === '/contact') return 'MojiGana | Contact';
+  if (path === '/privacy') return 'MojiGana | Privacy';
   return 'MojiGana';
 }
 
