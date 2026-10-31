@@ -1,6 +1,4 @@
 import { TrendingUp, TrendingDown, ArrowUpDown } from 'lucide-react';
-import AdBanner from '../site/AdBanner';
-
 /** Hit/miss counts must be plain non-negative integers (ignores booleans, strings, floats). */
 const sessionCount = (v) => {
   if (typeof v !== 'number' || !Number.isInteger(v) || v < 0) return 0;
@@ -293,9 +291,8 @@ const ResultsView = ({
           </div>
         )}
 
-        <AdBanner slot="5332946596" />
       </div>
-      <div className="relative z-10 shrink-0 -mt-8 px-5 pb-6 pt-3">
+      <div className="shrink-0 px-5 pb-3 pt-3">
         <button
           type="button"
           onClick={() => {

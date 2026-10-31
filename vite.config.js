@@ -12,7 +12,6 @@ function productionGhPagesHtml() {
     name: 'production-gh-pages-html',
     transformIndexHtml(html) {
       let h = html.replace(/<script\b([^>]*)>/gi, (tag, attrs) => {
-        if (/googlesyndication\.com/i.test(attrs)) return tag
         return `<script${attrs.replace(/\s+crossorigin(?:="[^"]*")?/g, '')}>`
       })
       h = h.replace(/(<link\b[^>]*)\s+crossorigin(?:="[^"]*")?/gi, '$1')
